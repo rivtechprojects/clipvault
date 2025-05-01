@@ -1,0 +1,6 @@
+@ClipVault_HostAddress = http://localhost:5157
+
+GET {{ClipVault_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

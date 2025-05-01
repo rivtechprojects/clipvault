@@ -1,0 +1,29 @@
+# Ignore build outputs
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Logs
+*.log
+
+# IDE settings
+.vscode/
+.idea/
+*.sw?
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Dependency directories
+node_modules/
+wwwroot/lib/
+
+# Environment files
+*.env
+appsettings.Development.json
