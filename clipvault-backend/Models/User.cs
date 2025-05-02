@@ -1,3 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ClipVault.Models;
+
+[Table("User")]
 public class User
 {
     public int UserId { get; set ;}
