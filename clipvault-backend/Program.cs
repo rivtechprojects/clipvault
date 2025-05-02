@@ -1,4 +1,25 @@
+using Microsoft.EntityFrameworkCore;
+using DotNetEnv;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Load environment variables from .env file
+Env.Load();
+
+builder.Configuration.AddEnvironmentVariables();
+
+var connectionStringTemplate = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Replace placeholders in the connection string template with environment variable values
+var connectionString = connectionStringTemplate
+    .Replace("${DB_SERVERNAME}", Environment.GetEnvironmentVariable("DB_SERVERNAME") ?? "localhost")
+    .Replace("${DB_NAME}", Environment.GetEnvironmentVariable("DB_NAME") ?? "clipvault_dev")
+    .Replace("${DB_USERNAME}", Environment.GetEnvironmentVariable("DB_USERNAME") ?? "dev_user")
+    .Replace("${DB_PASSWORD}", Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "dev_password")
+    .Replace("${DB_PORT}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -21,7 +42,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -32,6 +53,13 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+
+// var snippetTag = new SnippetTag
+// {
+//     Snippet = new Snippet { Title = "Example", Code = "Console.WriteLine(\"Hello\");", Language = "C#" },
+//     Tag = new Tag { Name = "C#" }
+// };
 
 app.Run();
 
