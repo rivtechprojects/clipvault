@@ -8,7 +8,5 @@ public interface ISnippetService
     Task<bool> DeleteSnippetAsync(int id);
     Task<List<SnippetResponseDto>> GetAllSnippetsAsync();
     Task<SnippetResponseDto?> GetSnippetByIdAsync(int id);
-    Task<List<Tag>> GetTagsByIdsAsync(List<int> tagIds);
-    Task<List<Snippet>> GetSnippetsByTagAsync(string tagName);
     Task<SnippetResponseDto?> UpdateSnippetAsync(int id, SnippetUpdateDto snippetDto);
 }

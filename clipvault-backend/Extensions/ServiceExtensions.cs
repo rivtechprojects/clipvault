@@ -32,8 +32,10 @@ public static class ServiceExtensions
         // Map IAppDbContext to AppDbContext
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
-        // Register SnippetService
+        // Register Dependencies
         services.AddScoped<ISnippetService, SnippetService>();
+        services.AddScoped<ITagService, TagService>();
+        services.AddScoped<ISnippetMapper, SnippetMapper>();
 
         // Add OpenAPI/Swagger
         services.AddEndpointsApiExplorer();

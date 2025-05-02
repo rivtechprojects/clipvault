@@ -1,5 +1,6 @@
 using ClipVault.Models;
 using Microsoft.EntityFrameworkCore;
+namespace ClipVault.Interfaces;
 
 public interface IAppDbContext
 {
