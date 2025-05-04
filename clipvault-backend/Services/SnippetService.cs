@@ -1,4 +1,5 @@
 using ClipVault.Dtos;
+using ClipVault.Exceptions;
 using ClipVault.Interfaces;
 using ClipVault.Models;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,11 @@ public class SnippetService : ISnippetService
         var existingTags = await _tagService.GetTagsByIdsAsync(snippetDto.TagIds);
         if (existingTags.Count != snippetDto.TagIds.Count)
         {
-            throw new ArgumentException("One or more TagIds are invalid.");
+            var invalidTagIds = snippetDto.TagIds.Except(existingTags.Select(t => t.Id)).ToList();
+            throw new ValidationException(new Dictionary<string, string[]>
+        {
+            { "TagIds", new[] { $"The following TagIds are invalid: {string.Join(", ", invalidTagIds)}" } }
+        });
         }
 
         // Map the DTO to the Snippet entity
@@ -65,9 +70,8 @@ public class SnippetService : ISnippetService
         .AsNoTracking()
         .Include(s => s.SnippetTags)
         .ThenInclude(st => st.Tag)
-        .FirstOrDefaultAsync(s => s.Id == id);
-
-        if (snippet == null) return null;
+        .FirstOrDefaultAsync(s => s.Id == id) 
+            ?? throw new NotFoundException($"Snippet with ID {id} not found.");
 
         return _snippetMapper.MapToSnippetResponseDto(snippet);
     }
@@ -91,9 +95,18 @@ public class SnippetService : ISnippetService
         var snippet = await _context.Snippets
             .Include(s => s.SnippetTags)
             .ThenInclude(st => st.Tag)
-            .FirstOrDefaultAsync(s => s.Id == id);
+            .FirstOrDefaultAsync(s => s.Id == id) 
+                ?? throw new NotFoundException($"Snippet with ID {id} not found.");
 
-        if (snippet == null) return null;
+        var existingTags = await _tagService.GetTagsByIdsAsync(snippetDto.TagIds);
+        if (existingTags.Count != snippetDto.TagIds.Count)
+        {
+            var invalidTagIds = snippetDto.TagIds.Except(existingTags.Select(t => t.Id)).ToList();
+            throw new ValidationException(new Dictionary<string, string[]>
+        {
+            { "TagIds", new[] { $"The following TagIds are invalid: {string.Join(", ", invalidTagIds)}" } }
+        });
+        }
 
         // Update snippet fields
         snippet.Title = snippetDto.Title;
@@ -110,9 +123,8 @@ public class SnippetService : ISnippetService
         snippet = await _context.Snippets
             .Include(s => s.SnippetTags)
             .ThenInclude(st => st.Tag)
-            .FirstOrDefaultAsync(s => s.Id == id);
-
-        if (snippet == null) return null;
+            .FirstOrDefaultAsync(s => s.Id == id) 
+                ?? throw new NotFoundException($"Snippet with ID {id} not found.");
 
         // Map to DTO
         return _snippetMapper.MapToSnippetResponseDto(snippet);
@@ -121,9 +133,8 @@ public class SnippetService : ISnippetService
     // Delete a snippet
     public async Task<bool> DeleteSnippetAsync(int id)
     {
-        var snippet = await _context.Snippets.FindAsync(id);
-        if (snippet == null) return false;
-
+        var snippet = await _context.Snippets.FindAsync(id) 
+            ?? throw new NotFoundException($"Snippet with ID {id} not found.");
         _context.Snippets.Remove(snippet);
         await _context.SaveChangesAsync();
         return true;
