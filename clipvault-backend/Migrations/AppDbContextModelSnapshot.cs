@@ -20,6 +20,75 @@ namespace ClipVault.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ClipVault.Models.Language", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Language");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Python"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "JavaScript"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "C#"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Java"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Ruby"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Go"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "PHP"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "Swift"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Name = "Kotlin"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Name = "TypeScript"
+                        });
+                });
+
             modelBuilder.Entity("ClipVault.Models.Snippet", b =>
                 {
                     b.Property<int>("Id")
@@ -32,15 +101,18 @@ namespace ClipVault.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("LanguageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
 
                     b.ToTable("Snippet");
                 });
@@ -80,18 +152,29 @@ namespace ClipVault.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "C#"
+                            Name = "Machine Learning"
                         },
                         new
                         {
                             Id = 2,
-                            Name = "JavaScript"
+                            Name = "Automation"
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Python"
+                            Name = "Web Scraping"
                         });
+                });
+
+            modelBuilder.Entity("ClipVault.Models.Snippet", b =>
+                {
+                    b.HasOne("ClipVault.Models.Language", "Language")
+                        .WithMany("Snippets")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
                 });
 
             modelBuilder.Entity("ClipVault.Models.SnippetTag", b =>
@@ -111,6 +194,11 @@ namespace ClipVault.Migrations
                     b.Navigation("Snippet");
 
                     b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("ClipVault.Models.Language", b =>
+                {
+                    b.Navigation("Snippets");
                 });
 
             modelBuilder.Entity("ClipVault.Models.Snippet", b =>

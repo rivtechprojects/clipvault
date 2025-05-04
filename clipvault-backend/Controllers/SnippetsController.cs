@@ -18,7 +18,7 @@ public class SnippetsController : ControllerBase
 
     [HttpPost]
     public async Task<IActionResult> CreateSnippet([FromBody] SnippetCreateDto snippetDto)
-    {
+    {        
         var response = await _snippetService.CreateSnippetAsync(snippetDto);
 
         return CreatedAtAction(nameof(GetSnippetById), new { id = response.Id }, response);
@@ -58,5 +58,13 @@ public class SnippetsController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchSnippets([FromQuery] string? keyword,[FromQuery] string? language, [FromQuery] List<string>? tagNames)
+    {
+        var snippets = await _snippetService.SearchSnippetsAsync(keyword, language, tagNames);
+
+        return Ok(snippets);
     }
 }
