@@ -35,9 +35,9 @@ public class ExceptionMiddleware
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return context.Response.WriteAsJsonAsync(new
             {
-                context.Response.StatusCode,
-                exception.Message,
-                validationException.Errors
+                statusCode = context.Response.StatusCode,
+                message = exception.Message,
+                details = validationException.Errors
             });
         }
 
@@ -46,8 +46,8 @@ public class ExceptionMiddleware
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             return context.Response.WriteAsJsonAsync(new
             {
-                context.Response.StatusCode,
-                exception.Message
+                statusCode = context.Response.StatusCode,
+                message = exception.Message
             });
         }
 
