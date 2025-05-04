@@ -1,4 +1,4 @@
-# ClipVault - Code Snippet Manager with AI Tagging
+# ClipVault - Code Snippet Manager with Tagging
 
 ClipVault is a full-stack application designed to help developers organize, search, and manage their code snippets. It supports syntax highlighting, tagging, search functionality, and optional AI-powered tag suggestions.
 
