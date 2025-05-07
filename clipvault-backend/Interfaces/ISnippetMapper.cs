@@ -7,4 +7,5 @@ public interface ISnippetMapper
 {
     SnippetResponseDto MapToSnippetResponseDto(Snippet snippet);
     Snippet MapToSnippetEntity(SnippetCreateDto snippetDto, int languageId, List<Tag> tags);
+    SnippetUpdateDto MapToUpdateDto(SnippetResponseDto snippetResponse);
 }

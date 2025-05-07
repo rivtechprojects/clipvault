@@ -52,6 +52,7 @@ public class SnippetService : ISnippetService
     {
         var snippets = await _context.Snippets
         .AsNoTracking()
+        .Include(s => s.Language)
         .Include(s => s.SnippetTags)
         .ThenInclude(st => st.Tag)
         .ToListAsync();
@@ -63,6 +64,7 @@ public class SnippetService : ISnippetService
     {
         var snippet = await _context.Snippets
         .AsNoTracking()
+        .Include(s => s.Language)
         .Include(s => s.SnippetTags)
         .ThenInclude(st => st.Tag)
         .FirstOrDefaultAsync(s => s.Id == id)
@@ -72,7 +74,7 @@ public class SnippetService : ISnippetService
     }
 
     // Get snippets by tag
-    public async Task<List<SnippetResponseDto>> GetSnippetsByTagAsync(string tagName)
+    public async Task<List<SnippetResponseDto>> GetSnippetsDtoByTagAsync(string tagName)
     {
         var snippets = await _context.Snippets
             .Include(s => s.SnippetTags)
@@ -83,42 +85,110 @@ public class SnippetService : ISnippetService
         // Map to DTOs using SnippetMapper
         return snippets.Select(_snippetMapper.MapToSnippetResponseDto).ToList();
     }
-
-    // Update a snippet
-    public async Task<SnippetResponseDto?> UpdateSnippetAsync(int id, SnippetUpdateDto snippetDto)
+    private async Task<Snippet?> GetSnippetEntityByIdAsync(int id)
     {
-        var snippet = await _context.Snippets
+        return await _context.Snippets
             .Include(s => s.SnippetTags)
             .ThenInclude(st => st.Tag)
-            .FirstOrDefaultAsync(s => s.Id == id)
-                ?? throw new NotFoundException($"Snippet with ID {id} not found.");
-
-        // Validate or add the language
-        var language = await _context.Languages
-            .FirstOrDefaultAsync(l => l.Name.ToLower() == snippetDto.Language.ToLower());
-
-        if (language == null)
+            .FirstOrDefaultAsync(s => s.Id == id);
+    }
+    public async Task<SnippetResponseDto?> UpdateSnippetAsync(int id, SnippetUpdateDto snippetDto)
+    {
+        // Retrieve the existing snippet entity
+        var existingSnippet = await GetSnippetEntityByIdAsync(id);
+        if (existingSnippet == null)
         {
-            language = new Language { Name = snippetDto.Language };
-            _context.Languages.Add(language);
-            await _context.SaveChangesAsync();
+            throw new NotFoundException($"Snippet with ID {id} not found.");
         }
 
-        // Validate and/or create tags
-        var existingTags = await _tagService.ValidateAndCreateTagsAsync(snippetDto.TagNames);
+        // Merge the incoming DTO with the existing snippet
+        if (snippetDto.Title != null) existingSnippet.Title = snippetDto.Title;
+        if (snippetDto.Code != null) existingSnippet.Code = snippetDto.Code;
 
-        // Update snippet fields
-        snippet.Title = snippetDto.Title;
-        snippet.Code = snippetDto.Code;
-        snippet.LanguageId = language.Id; // Update the LanguageId foreign key
+        // Update the language if provided
+        if (!string.IsNullOrEmpty(snippetDto.Language))
+        {
+            var normalizedLanguage = snippetDto.Language.Trim().ToLower();
 
-        // Update tags
-        _tagService.UpdateSnippetTags(snippet, existingTags.Select(t => t.Id).ToList());
+            var language = await _context.Languages
+                .FirstOrDefaultAsync(l => l.Name.ToLower() == normalizedLanguage);
 
-        // Save changes
+            if (language == null)
+            {
+                language = new Language { Name = snippetDto.Language.Trim() };
+                _context.Languages.Add(language);
+                await _context.SaveChangesAsync();
+            }
+
+            existingSnippet.LanguageId = language.Id;
+        }
+
+        // Save changes to the database
         await _context.SaveChangesAsync();
 
-        return _snippetMapper.MapToSnippetResponseDto(snippet);
+        // Return the updated snippet as a DTO
+        return _snippetMapper.MapToSnippetResponseDto(existingSnippet);
+    }
+
+    public async Task AddTagsToSnippetAsync(int snippetId, List<string> tagNames)
+    {
+        var snippet = await GetSnippetEntityByIdAsync(snippetId);
+        if (snippet == null)
+        {
+            throw new NotFoundException($"Snippet with ID {snippetId} not found.");
+        }
+
+        var existingTags = await _tagService.ValidateAndCreateTagsAsync(tagNames);
+
+        foreach (var tag in existingTags)
+        {
+            if (!snippet.SnippetTags.Any(st => st.TagId == tag.Id))
+            {
+                snippet.SnippetTags.Add(new SnippetTag { TagId = tag.Id });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveTagsFromSnippetAsync(int snippetId, List<string> tagNames)
+    {
+        var snippet = await GetSnippetEntityByIdAsync(snippetId);
+        if (snippet == null)
+        {
+            throw new NotFoundException($"Snippet with ID {snippetId} not found.");
+        }
+
+        var tagsToRemove = snippet.SnippetTags
+            .Where(st => tagNames
+                .Select(t => t.ToLower())
+                .Contains(st.Tag?.Name?.ToLower()))
+            .ToList();
+
+        foreach (var tagToRemove in tagsToRemove)
+        {
+            snippet.SnippetTags.Remove(tagToRemove);
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task ReplaceTagsForSnippetAsync(int snippetId, List<string> tagNames)
+    {
+        var snippet = await GetSnippetEntityByIdAsync(snippetId);
+        if (snippet == null)
+        {
+            throw new NotFoundException($"Snippet with ID {snippetId} not found.");
+        }
+
+        // Clear existing tags
+        snippet.SnippetTags.Clear();
+
+        // Add new tags
+        var newTags = await _tagService.ValidateAndCreateTagsAsync(tagNames);
+        snippet.SnippetTags = newTags.Select(tag => new SnippetTag { TagId = tag.Id }).ToList();
+
+        await _context.SaveChangesAsync();
     }
 
     // Delete a snippet
@@ -162,4 +232,5 @@ public class SnippetService : ISnippetService
         var snippets = await query.ToListAsync();
         return snippets.Select(_snippetMapper.MapToSnippetResponseDto).ToList();
     }
+
 }

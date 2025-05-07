@@ -6,5 +6,5 @@ public class SnippetResponseDto
     public required string Title { get; set; }
     public required string Code { get; set; }
     public required string Language { get; set; }
-    public List<TagDto> Tags { get; set; } = new List<TagDto>();
+    public List<string> Tags { get; set; } = new List<string>();
 }

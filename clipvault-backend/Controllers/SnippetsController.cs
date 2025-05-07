@@ -18,7 +18,7 @@ public class SnippetsController : ControllerBase
 
     [HttpPost]
     public async Task<IActionResult> CreateSnippet([FromBody] SnippetCreateDto snippetDto)
-    {        
+    {
         var response = await _snippetService.CreateSnippetAsync(snippetDto);
 
         return CreatedAtAction(nameof(GetSnippetById), new { id = response.Id }, response);
@@ -34,26 +34,47 @@ public class SnippetsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetSnippetById(int id)
     {
-        var snippet = await _snippetService.GetSnippetByIdAsync(id) 
+        var snippet = await _snippetService.GetSnippetByIdAsync(id)
             ?? throw new NotFoundException($"Snippet with ID {id} not found.");
-            
+
         return Ok(snippet);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateSnippet(int id, [FromBody] SnippetUpdateDto snippetDto)
     {
-        var snippet = await _snippetService.UpdateSnippetAsync(id, snippetDto)
+        var updatedSnippet = await _snippetService.UpdateSnippetAsync(id, snippetDto)
             ?? throw new NotFoundException($"Snippet with ID {id} not found.");
+        return Ok(updatedSnippet);
+    }
 
-        return Ok(snippet);
+    [HttpPost("{id}/tags")]
+    public async Task<IActionResult> AddTagsToSnippet(int id, [FromBody] List<string> tagNames)
+    {
+        await _snippetService.AddTagsToSnippetAsync(id, tagNames);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/tags")]
+    public async Task<IActionResult> RemoveTagsFromSnippet(int id, [FromBody] List<string> tagNames)
+    {
+        await _snippetService.RemoveTagsFromSnippetAsync(id, tagNames);
+        return NoContent();
+    }
+
+    [HttpPut("{id}/tags")]
+    public async Task<IActionResult> ReplaceTagsForSnippet(int id, [FromBody] List<string> tagNames)
+    {
+        await _snippetService.ReplaceTagsForSnippetAsync(id, tagNames);
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteSnippet(int id)
     {
         var success = await _snippetService.DeleteSnippetAsync(id);
-        if (!success) {
+        if (!success)
+        {
             throw new NotFoundException($"Snippet with ID {id} not found.");
         }
 
@@ -61,7 +82,7 @@ public class SnippetsController : ControllerBase
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> SearchSnippets([FromQuery] string? keyword,[FromQuery] string? language, [FromQuery] List<string>? tagNames)
+    public async Task<IActionResult> SearchSnippets([FromQuery] string? keyword, [FromQuery] string? language, [FromQuery] List<string>? tagNames)
     {
         var snippets = await _snippetService.SearchSnippetsAsync(keyword, language, tagNames);
 

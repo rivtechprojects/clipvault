@@ -12,12 +12,8 @@ public class SnippetMapper : ISnippetMapper
             Id = snippet.Id,
             Title = snippet.Title,
             Code = snippet.Code,
-            Language = snippet.Language?.Name ?? "Unknown",
-            Tags = snippet.SnippetTags.Select(st => new TagDto
-            {
-                Id = st.TagId,
-                Name = st.Tag?.Name ?? "Unknown"
-            }).ToList()
+            Language = snippet.Language?.Name ?? "",
+            Tags = snippet.SnippetTags.Select(st => st.Tag?.Name ?? "").ToList() // Map to list of tag names
         };
     }
 
@@ -33,6 +29,17 @@ public class SnippetMapper : ISnippetMapper
             {
                 TagId = tag.Id
             }).ToList()
+        };
+    }
+
+    public SnippetUpdateDto MapToUpdateDto(SnippetResponseDto snippetResponse)
+    {
+        return new SnippetUpdateDto
+        {
+            Title = snippetResponse.Title,
+            Code = snippetResponse.Code,
+            Language = snippetResponse.Language,
+            TagNames = snippetResponse.Tags
         };
     }
 }
