@@ -1,5 +1,5 @@
+using System.Text.Json;
 using ClipVault.Exceptions;
-
 namespace ClipVault.Middleware;
 
 public class ExceptionMiddleware
@@ -48,6 +48,16 @@ public class ExceptionMiddleware
             {
                 statusCode = context.Response.StatusCode,
                 message = exception.Message
+            });
+        }
+
+        if (exception is JsonException || exception is BadHttpRequestException)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return context.Response.WriteAsJsonAsync(new
+            {
+                statusCode = context.Response.StatusCode,
+                message = "The request body contains invalid JSON or is missing required fields. Please verify the request format and try again."
             });
         }
 

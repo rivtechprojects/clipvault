@@ -8,7 +8,7 @@ public class ValidationFilter : IActionFilter
 {
     public void OnActionExecuting(ActionExecutingContext context)
     {
-        if (context.ModelState == null || !context.ModelState.IsValid)
+        if (context.ModelState == null || context.ModelState.IsValid)
         {
             return;
         }
