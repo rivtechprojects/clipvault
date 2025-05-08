@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace ClipVault.Filters;
 
-
 public class ValidationFilter : IActionFilter
 {
     public void OnActionExecuting(ActionExecutingContext context)
@@ -13,18 +12,11 @@ public class ValidationFilter : IActionFilter
             return;
         }
 
-        var errors = context.ModelState
-            .Where(entry => entry.Value?.Errors?.Count > 0)
-            .ToDictionary(
-                field => field.Key,
-                field => field.Value?.Errors?.Select(e => e.ErrorMessage).ToArray() 
-                    ?? []
-            );
-
-        if (errors.Count != 0)
+        var errors = new Dictionary<string, string[]>
         {
-            throw new ValidationException(errors);
-        }
+            { "error", new[] { "Request was invalid. Please check your input and try again." } }
+        };
+        throw new ValidationException(errors);
     }
 
     public void OnActionExecuted(ActionExecutedContext context) { }

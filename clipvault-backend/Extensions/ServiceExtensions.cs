@@ -1,6 +1,9 @@
 using ClipVault.Interfaces;
 using ClipVault.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
+using ClipVault.Filters;
+
 namespace ClipVault.Extensions;
 
 
@@ -37,8 +40,32 @@ public static class ServiceExtensions
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<ISnippetMapper, SnippetMapper>();
 
+        // Register ValidationFilter globally for all controllers
+        services.AddControllers(options =>
+        {
+            options.Filters.Add<ValidationFilter>();
+        });
+
         // Add OpenAPI/Swagger
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+
+
+        services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { "error", new[] { "Request was invalid. Please check your input and try again." } }
+                };
+                return new BadRequestObjectResult(new
+                {
+                    status = 400,
+                    message = "Validation failed.",
+                    errors
+                });
+            };
+        });
     }
 }
