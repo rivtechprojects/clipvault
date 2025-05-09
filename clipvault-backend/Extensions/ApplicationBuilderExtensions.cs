@@ -18,5 +18,9 @@ public static class ApplicationBuilderExtensions
 
         // Configure HTTPS redirection
         app.UseHttpsRedirection();
+
+        // Configure authentication and authorization
+        app.UseAuthentication();
+        app.UseAuthorization();
     }
 }

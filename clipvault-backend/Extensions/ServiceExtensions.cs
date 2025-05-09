@@ -1,11 +1,8 @@
 using ClipVault.Interfaces;
 using ClipVault.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
 using ClipVault.Filters;
 
 namespace ClipVault.Extensions;
-
 
 public static class ServiceExtensions
 {
@@ -14,23 +11,8 @@ public static class ServiceExtensions
         // Load environment variables from .env file
         DotNetEnv.Env.Load();
 
-        // Build the connection string dynamically
-        var connectionStringTemplate = configuration.GetConnectionString("DefaultConnection");
-        if (string.IsNullOrEmpty(connectionStringTemplate))
-        {
-            throw new InvalidOperationException("The connection string is not defined in the configuration.");
-        }
-
-        var connectionString = connectionStringTemplate
-            .Replace("${DB_SERVERNAME}", Environment.GetEnvironmentVariable("DB_SERVERNAME") ?? "localhost")
-            .Replace("${DB_NAME}", Environment.GetEnvironmentVariable("DB_NAME") ?? "clipvault_dev")
-            .Replace("${DB_USERNAME}", Environment.GetEnvironmentVariable("DB_USERNAME") ?? "dev_user")
-            .Replace("${DB_PASSWORD}", Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "dev_password")
-            .Replace("${DB_PORT}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432");
-
         // Register AppDbContext with AddDbContext
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        services.AddDatabaseConfiguration(configuration);
 
         // Map IAppDbContext to AppDbContext
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
@@ -47,25 +29,11 @@ public static class ServiceExtensions
         });
 
         // Add OpenAPI/Swagger
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerConfiguration();
 
+        // Add JWT Authentication
+        services.AddJwtAuthentication(configuration);
 
-        services.Configure<ApiBehaviorOptions>(options =>
-        {
-            options.InvalidModelStateResponseFactory = context =>
-            {
-                var errors = new Dictionary<string, string[]>
-                {
-                    { "error", new[] { "Request was invalid. Please check your input and try again." } }
-                };
-                return new BadRequestObjectResult(new
-                {
-                    status = 400,
-                    message = "Validation failed.",
-                    errors
-                });
-            };
-        });
+        services.ConfigureApiBehavior();
     }
 }
