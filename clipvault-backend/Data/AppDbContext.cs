@@ -9,6 +9,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Tag> Tags { get; set; }
     public DbSet<SnippetTag> SnippetTags { get; set; }
     public DbSet<Language> Languages { get; set; }
+    public DbSet<User> Users { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
 
@@ -55,6 +56,13 @@ public class AppDbContext : DbContext, IAppDbContext
         modelBuilder.Entity<Snippet>()
             .Property(s => s.LanguageId)
             .HasDefaultValue(1);
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.UserName)
+            .IsUnique();
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
     }
 
 }
