@@ -2,11 +2,13 @@ using ClipVault.Dtos;
 using ClipVault.Exceptions;
 using ClipVault.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ClipVault.Controllers;
 
 [ApiController]
 [Route("api/snippets")]
+[Authorize]
 public class SnippetsController : ControllerBase
 {
     private readonly ISnippetService _snippetService;
@@ -24,6 +26,7 @@ public class SnippetsController : ControllerBase
         return CreatedAtAction(nameof(GetSnippetById), new { id = response.Id }, response);
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAllSnippets()
     {

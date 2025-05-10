@@ -1,6 +1,8 @@
 using ClipVault.Interfaces;
 using ClipVault.Services;
 using ClipVault.Filters;
+using Microsoft.AspNetCore.Identity;
+using ClipVault.Models;
 
 namespace ClipVault.Extensions;
 
@@ -8,9 +10,6 @@ public static class ServiceExtensions
 {
     public static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Load environment variables from .env file
-        DotNetEnv.Env.Load();
-
         // Register AppDbContext with AddDbContext
         services.AddDatabaseConfiguration(configuration);
 
@@ -21,6 +20,10 @@ public static class ServiceExtensions
         services.AddScoped<ISnippetService, SnippetService>();
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<ISnippetMapper, SnippetMapper>();
+        services.AddScoped<IAuthService, AuthService>();
+
+        // Register IPasswordHasher
+        services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
         // Register ValidationFilter globally for all controllers
         services.AddControllers(options =>
@@ -35,5 +38,6 @@ public static class ServiceExtensions
         services.AddJwtAuthentication(configuration);
 
         services.ConfigureApiBehavior();
+        services.AddCorsPolicy(configuration);
     }
 }

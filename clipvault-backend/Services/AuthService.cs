@@ -1,20 +1,23 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using ClipVault.Models;
 using Microsoft.EntityFrameworkCore;
+using ClipVault.Interfaces;
+using ClipVault.Utils;
 
-namespace clipvault_backend.Services;
+namespace ClipVault.Services;
 
-public class AuthService
+public class AuthService : IAuthService
 {
-    private readonly AppDbContext _context;
+    private const int DefaultTokenExpirationMinutes = 120;
+
+    private readonly IAppDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IPasswordHasher<User> _passwordHasher;
 
-    public AuthService(AppDbContext context, IConfiguration configuration, IPasswordHasher<User> passwordHasher)
+    public AuthService(IAppDbContext context, IConfiguration configuration, IPasswordHasher<User> passwordHasher)
     {
         _context = context;
         _configuration = configuration;
@@ -54,22 +57,33 @@ public class AuthService
 
     private string GenerateJwtToken(User user)
     {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["SecretKey"] ?? "your_default_secret";
-        var issuer = jwtSettings["Issuer"] ?? "ClipVault";
-        var audience = jwtSettings["Audience"] ?? "ClipVaultUsers";
-        var expires = DateTime.UtcNow.AddHours(2);
+        var jwtSettings = _configuration.GetSection("Jwt");
 
+        // Validate JWT configuration
+        var secretKey = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key is not configured.");
+        if (!ValidationUtils.IsBase64String(secretKey)) throw new InvalidOperationException("JWT Key must be a valid Base64 string.");
+
+        var issuer = jwtSettings["Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured.");
+        var audience = jwtSettings["Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured.");
+
+        var expirationString = jwtSettings["TokenExpirationMinutes"];
+        if (!int.TryParse(expirationString, out var expiresInMinutes)) expiresInMinutes = DefaultTokenExpirationMinutes;
+
+        var expires = DateTime.UtcNow.AddMinutes(expiresInMinutes);
+
+        // Create claims
         var claims = new[]
         {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role ?? "User")
-            };
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+            new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName ?? string.Empty),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new Claim(ClaimTypes.Role, user.Role ?? "User")
+        };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        // Generate token
+        var key = new SymmetricSecurityKey(Convert.FromBase64String(secretKey));
+        var algorithm = jwtSettings["Algorithm"] ?? SecurityAlgorithms.HmacSha256;
+        var creds = new SigningCredentials(key, algorithm);
 
         var token = new JwtSecurityToken(
             issuer: issuer,

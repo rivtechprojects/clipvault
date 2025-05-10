@@ -22,5 +22,6 @@ public static class ApplicationBuilderExtensions
         // Configure authentication and authorization
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseCors("DefaultPolicy");
     }
 }

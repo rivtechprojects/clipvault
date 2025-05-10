@@ -62,6 +62,17 @@ public class ExceptionMiddleware
         }
 
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+        if (context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
+        {
+            return context.Response.WriteAsJsonAsync(new
+            {
+                context.Response.StatusCode,
+                exception.Message,
+                exception.StackTrace
+            });
+        }
+
         return context.Response.WriteAsJsonAsync(new
         {
             context.Response.StatusCode,
