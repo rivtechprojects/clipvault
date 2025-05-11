@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ClipVault.Exceptions;
+using Microsoft.EntityFrameworkCore;
 namespace ClipVault.Middleware;
 
 public class ExceptionMiddleware
@@ -26,57 +27,56 @@ public class ExceptionMiddleware
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
-
-        if (exception is ValidationException validationException)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return context.Response.WriteAsJsonAsync(new
-            {
-                statusCode = context.Response.StatusCode,
-                message = exception.Message,
-                details = validationException.Errors
-            });
-        }
 
         if (exception is NotFoundException)
         {
             context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return context.Response.WriteAsJsonAsync(new
+            await context.Response.WriteAsJsonAsync(new
             {
                 statusCode = context.Response.StatusCode,
                 message = exception.Message
             });
+            return;
         }
 
-        if (exception is JsonException || exception is BadHttpRequestException)
+        if (exception is DbUpdateException dbUpdateException)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return context.Response.WriteAsJsonAsync(new
+
+            await context.Response.WriteAsJsonAsync(new
             {
                 statusCode = context.Response.StatusCode,
-                message = "The request body contains invalid JSON or is missing required fields. Please verify the request format and try again."
+                message = "A database update error occurred. Please ensure the data is valid and try again.",
+                details = context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment() ? dbUpdateException.Message : null
             });
+            return;
+        }
+
+        if (exception is InvalidOperationException invalidOperationException)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+            await context.Response.WriteAsJsonAsync(new
+            {
+                statusCode = context.Response.StatusCode,
+                message = "The request was invalid.",
+                details = context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment() ? invalidOperationException.Message : null
+            });
+            return;
         }
 
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-        if (context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
-        {
-            return context.Response.WriteAsJsonAsync(new
-            {
-                context.Response.StatusCode,
-                exception.Message,
-                exception.StackTrace
-            });
-        }
+        _logger.LogError(exception, "An unexpected error occurred.");
 
-        return context.Response.WriteAsJsonAsync(new
+        await context.Response.WriteAsJsonAsync(new
         {
-            context.Response.StatusCode,
-            Message = "An unexpected error occurred. Please try again later."
+            statusCode = context.Response.StatusCode,
+            message = "An unexpected error occurred. Please contact support if the issue persists.",
+            details = context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment() ? exception.Message : null
         });
     }
 }
