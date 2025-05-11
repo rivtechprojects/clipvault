@@ -1,0 +1,77 @@
+name: Automated Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 0 * * *" # Run daily at midnight UTC
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [csharp, typescript] # Define the languages we are testing
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Setup for C# tests
+    - name: Setup .NET
+      if: matrix.language == 'csharp'
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '9.0.x' # Match your backend project’s .NET version
+    - name: Restore NuGet packages
+      if: matrix.language == 'csharp'
+      run: dotnet restore
+
+    # Check for C# test files
+    - name: Check for C# test files
+      if: matrix.language == 'csharp'
+      id: check_csharp_tests
+      run: |
+        if [ -z "$(find ./clipvault-backend/Tests -name '*.cs')" ]; then
+          echo "::set-output name=has_tests::false"
+        else
+          echo "::set-output name=has_tests::true"
+        fi
+
+    # Run C# Tests only if test files exist
+    - name: Run C# Tests
+      if: matrix.language == 'csharp' && steps.check_csharp_tests.outputs.has_tests == 'true'
+      run: dotnet test --verbosity normal
+
+    # Setup for TypeScript tests
+    - name: Setup Node.js
+      if: matrix.language == 'typescript'
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - name: Install TypeScript dependencies
+      if: matrix.language == 'typescript'
+      working-directory: clipvault-frontend
+      run: npm install
+
+    # Check for TypeScript test files
+    - name: Check for TypeScript test files
+      if: matrix.language == 'typescript'
+      id: check_typescript_tests
+      run: |
+        if [ -z "$(find ./clipvault-frontend/src -name '*.spec.ts' -o -name '*.test.ts')" ]; then
+          echo "::set-output name=has_tests::false"
+        else
+          echo "::set-output name=has_tests::true"
+        fi
+
+    # Run TypeScript Tests only if test files exist
+    - name: Run TypeScript Tests
+      if: matrix.language == 'typescript' && steps.check_typescript_tests.outputs.has_tests == 'true'
+      working-directory: clipvault-frontend
+      run: npm test
