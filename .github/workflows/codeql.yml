@@ -44,6 +44,7 @@ jobs:
       with:
         node-version: '18'
     - name: Install npm dependencies
+      working-directory: clipvault-frontend
       run: npm install
 
     - name: Initialize CodeQL
