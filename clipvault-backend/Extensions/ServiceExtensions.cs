@@ -1,6 +1,5 @@
 using ClipVault.Interfaces;
 using ClipVault.Services;
-using ClipVault.Filters;
 using Microsoft.AspNetCore.Identity;
 using ClipVault.Models;
 
@@ -24,12 +23,6 @@ public static class ServiceExtensions
 
         // Register IPasswordHasher
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-
-        // Register ValidationFilter globally for all controllers
-        services.AddControllers(options =>
-        {
-            options.Filters.Add<ValidationFilter>();
-        });
 
         // Add OpenAPI/Swagger
         services.AddSwaggerConfiguration();

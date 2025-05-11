@@ -10,13 +10,16 @@ public static class ApiBehaviorExtensions
         {
             options.InvalidModelStateResponseFactory = context =>
             {
-                var errors = new Dictionary<string, string[]>
-                {
-                    { "error", new[] { "Request was invalid. Please check your input and try again." } }
-                };
+                var errors = context.ModelState
+                    .Where(ms => ms.Value?.Errors?.Count > 0)
+                    .ToDictionary(
+                        ms => ms.Key,
+                        ms => ms.Value?.Errors?.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                    );
+
                 return new BadRequestObjectResult(new
                 {
-                    status = 400,
+                    status = StatusCodes.Status400BadRequest,
                     message = "Validation failed.",
                     errors
                 });
