@@ -1,4 +1,4 @@
-name: "CodeQL Analysis for Clipvault"
+name: "CodeQL Analysis for ClipVault"
 
 on:
   push:
@@ -23,9 +23,9 @@ jobs:
       matrix:
         include:
         - language: csharp
-          build-mode: none  # Change to "manual" if the project requires building
+          build-mode: manual  # C# requires building before analysis
         - language: javascript-typescript
-          build-mode: none  # Change to "manual" if the project requires building
+          build-mode: none  # TypeScript does not require building
 
     steps:
     - name: Checkout repository
@@ -54,8 +54,9 @@ jobs:
         # Add custom queries if needed
         queries: +security-extended,security-and-quality
 
-    # Manual build instructions (uncomment and modify if build-mode is set to "manual").
+    # Manual build instructions for C#
     - if: matrix.build-mode == 'manual'
+      name: Build C# project
       shell: bash
       run: |
         echo "Building project for manual analysis..."
