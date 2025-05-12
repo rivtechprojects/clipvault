@@ -46,12 +46,28 @@ jobs:
       if: matrix.language == 'csharp' && steps.check_csharp_tests.outputs.has_tests == 'true'
       run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
 
+    - name: Compress C# Coverage Report
+      if: matrix.language == 'csharp' && steps.check_csharp_tests.outputs.has_tests == 'true'
+      run: |
+        if [ -d "./TestResults" ]; then
+          echo "Compressing C# coverage report..."
+          tar -czf csharp-coverage.tar.gz -C ./TestResults .
+        else
+          echo "No C# coverage report found."
+          exit 0
+        fi
+
     - name: Upload C# Coverage Report
-      if: matrix.language == 'csharp'
+      if: matrix.language == 'csharp' && steps.check_csharp_tests.outputs.has_tests == 'true'
       uses: actions/upload-artifact@v3
       with:
         name: csharp-coverage
-        path: ./TestResults
+        path: csharp-coverage.tar.gz
+
+    # Cleanup temporary files
+    - name: Cleanup C# Coverage Archive
+      if: matrix.language == 'csharp' && steps.check_csharp_tests.outputs.has_tests == 'true'
+      run: rm -f csharp-coverage.tar.gz
 
     # Setup for TypeScript tests
     - name: Setup Node.js
@@ -81,9 +97,25 @@ jobs:
       working-directory: clipvault-frontend
       run: npm test -- --coverage
 
+    - name: Compress TypeScript Coverage Report
+      if: matrix.language == 'typescript' && steps.check_typescript_tests.outputs.has_tests == 'true'
+      run: |
+        if [ -d "clipvault-frontend/coverage" ]; then
+          echo "Compressing TypeScript coverage report..."
+          tar -czf typescript-coverage.tar.gz -C clipvault-frontend/coverage .
+        else
+          echo "No TypeScript coverage report found."
+          exit 0
+        fi
+
     - name: Upload TypeScript Coverage Report
-      if: matrix.language == 'typescript'
-      uses: actions/upload-artifact@v3
+      if: matrix.language == 'typescript' && steps.check_typescript_tests.outputs.has_tests == 'true'
+      uses: actions/upload-artifact@v3.1.0
       with:
         name: typescript-coverage
-        path: clipvault-frontend/coverage
+        path: typescript-coverage.tar.gz
+
+    # Cleanup temporary files
+    - name: Cleanup TypeScript Coverage Archive
+      if: matrix.language == 'typescript' && steps.check_typescript_tests.outputs.has_tests == 'true'
+      run: rm -f typescript-coverage.tar.gz
