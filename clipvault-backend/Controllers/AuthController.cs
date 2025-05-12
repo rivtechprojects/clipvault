@@ -20,30 +20,16 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        try
-        {
-            var user = await _authService.RegisterUserAsync(dto.UserName, dto.Email, dto.Password);
-            return Ok(new { user.UserId, user.UserName, user.Email });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var user = await _authService.RegisterUserAsync(dto.UserName, dto.Email, dto.Password);
+        return Ok(new { user.UserId, user.UserName, user.Email });
     }
 
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        try
-        {
-            var token = await _authService.LoginUserAsync(dto.UserNameOrEmail, dto.Password);
-            return Ok(new { token });
-        }
-        catch (Exception ex)
-        {
-            return Unauthorized(new { error = ex.Message });
-        }
+        var token = await _authService.LoginUserAsync(dto.UserNameOrEmail, dto.Password);
+        return Ok(new { token });
     }
 }
 
