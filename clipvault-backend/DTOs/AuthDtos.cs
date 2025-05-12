@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using ClipVault.Utils;
 
-namespace ClipVault.DTOs;
+namespace ClipVault.Dtos;
 
 public class RegisterDto
 {

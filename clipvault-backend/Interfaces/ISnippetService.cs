@@ -13,4 +13,5 @@ public interface ISnippetService
     Task ReplaceTagsForSnippetAsync(int snippetId, List<string> tagNames);
     Task RemoveTagsFromSnippetAsync(int snippetId, List<string> tagNames);
     Task<SnippetResponseDto> AddTagsToSnippetAsync(int snippetId, List<string> tagNames);
+    Task<List<SnippetResponseDto>> GetSnippetsDtoByTagAsync(string tagName);
 }
