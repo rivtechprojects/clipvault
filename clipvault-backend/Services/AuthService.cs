@@ -6,6 +6,7 @@ using ClipVault.Models;
 using Microsoft.EntityFrameworkCore;
 using ClipVault.Interfaces;
 using ClipVault.Utils;
+using ClipVault.Exceptions;
 
 namespace ClipVault.Services;
 
@@ -26,33 +27,56 @@ public class AuthService : IAuthService
 
     public async Task<User> RegisterUserAsync(string username, string email, string password)
     {
-        if (_context.Users.Any(u => u.UserName == username || u.Email == email))
-            throw new Exception("Username or email already exists.");
-
-        var tempUser = new User
+        try
         {
-            UserName = username,
-            Email = email,
-            PasswordHash = "temp", // Will be replaced below
-            CreatedAt = DateTime.UtcNow
-        };
-        tempUser.PasswordHash = _passwordHasher.HashPassword(tempUser, password);
-        _context.Users.Add(tempUser);
-        await _context.SaveChangesAsync();
-        return tempUser;
+            if (_context.Users.Any(u => u.UserName == username || u.Email == email))
+                throw new UserAlreadyExistsException("Username or email already exists.");
+
+            var tempUser = new User
+            {
+                UserName = username,
+                Email = email,
+                PasswordHash = "temp", // Will be replaced below
+                CreatedAt = DateTime.UtcNow
+            };
+            tempUser.PasswordHash = _passwordHasher.HashPassword(tempUser, password);
+            _context.Users.Add(tempUser);
+            await _context.SaveChangesAsync();
+            return tempUser;
+        }
+        catch (UserAlreadyExistsException)
+        {
+            throw; // Rethrow the specific exception
+        }
+        catch (Exception ex)
+        {
+            throw new RegistrationFailedException("An unexpected error occurred during registration.", ex);
+        }
     }
 
     public async Task<string> LoginUserAsync(string usernameOrEmail, string password)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == usernameOrEmail || u.Email == usernameOrEmail);
-        if (user == null)
-            throw new Exception("Invalid username or password.");
+        try
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == usernameOrEmail || u.Email == usernameOrEmail);
+            if (user == null)
+                throw new InvalidCredentialsException("Invalid username or password.");
 
-        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
-        if (result == PasswordVerificationResult.Failed)
-            throw new Exception("Invalid username or password.");
+            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+            if (result == PasswordVerificationResult.Failed)
+                throw new InvalidCredentialsException("Invalid username or password.");
 
-        return GenerateJwtToken(user);
+            return GenerateJwtToken(user);
+        }
+        catch (InvalidCredentialsException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Wrap other exceptions in LoginFailedException
+            throw new LoginFailedException("An unexpected error occurred during login.", ex);
+        }
     }
 
     private string GenerateJwtToken(User user)

@@ -5,6 +5,7 @@ using ClipVault.Services;
 using ClipVault.Interfaces;
 using ClipVault.Models;
 using Microsoft.EntityFrameworkCore;
+using ClipVault.Exceptions;
 
 namespace ClipVault.Tests
 {
@@ -73,7 +74,7 @@ namespace ClipVault.Tests
             _mockDbContext.Setup(db => db.Users).Returns(mockUserSet.Object);
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => _authService.RegisterUserAsync("testuser", "test@example.com", "password123"));
+            await Assert.ThrowsAsync<UserAlreadyExistsException>(() => _authService.RegisterUserAsync("testuser", "test@example.com", "password123"));
         }
 
         [Fact]

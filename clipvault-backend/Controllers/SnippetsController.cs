@@ -54,8 +54,8 @@ public class SnippetsController : ControllerBase
     [HttpPost("{id}/tags")]
     public async Task<IActionResult> AddTagsToSnippet(int id, [FromBody] List<string> tagNames)
     {
-        await _snippetService.AddTagsToSnippetAsync(id, tagNames);
-        return NoContent();
+        var updatedSnippet = await _snippetService.AddTagsToSnippetAsync(id, tagNames);
+        return Ok(updatedSnippet);
     }
 
     [HttpDelete("{id}/tags")]

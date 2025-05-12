@@ -68,6 +68,54 @@ public class ExceptionMiddleware
             return;
         }
 
+        if (exception is RegistrationFailedException registrationFailedException)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            _logger.LogError(registrationFailedException, "Registration failed.");
+            await context.Response.WriteAsJsonAsync(new
+            {
+                statusCode = context.Response.StatusCode,
+                message = "An error occurred during registration. Please try again."
+            });
+            return;
+        }
+
+        if (exception is LoginFailedException loginFailedException)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            _logger.LogError(loginFailedException, "Login failed.");
+            await context.Response.WriteAsJsonAsync(new
+            {
+                statusCode = context.Response.StatusCode,
+                message = "An error occurred during login. Please try again."
+            });
+            return;
+        }
+
+        if (exception is UserAlreadyExistsException userAlreadyExistsException)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            _logger.LogError(userAlreadyExistsException, "User already exists.");
+            await context.Response.WriteAsJsonAsync(new
+            {
+                statusCode = context.Response.StatusCode,
+                message = userAlreadyExistsException.Message
+            });
+            return;
+        }
+
+        if (exception is InvalidCredentialsException invalidCredentialsException)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            _logger.LogError(invalidCredentialsException, "Invalid username or password.");
+            await context.Response.WriteAsJsonAsync(new
+            {
+                statusCode = context.Response.StatusCode,
+                message = invalidCredentialsException.Message
+            });
+            return;
+        }
+
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
         _logger.LogError(exception, "An unexpected error occurred.");
