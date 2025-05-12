@@ -290,17 +290,23 @@ namespace ClipVault.Tests
             // Arrange
             var language = TestDataHelper.CreateLanguage();
             var snippetForAddingTags = TestDataHelper.CreateSnippet(new SnippetCreateDto { Title = "Snippet 1", Code = "Code 1", Language = "C#", TagNames = new List<string> { "example" } }, language);
-            snippetForAddingTags.SnippetTags = [];
+            snippetForAddingTags.SnippetTags = new List<SnippetTag>();
 
             var snippets = new List<Snippet> { snippetForAddingTags }.AsQueryable();
             var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets);
             _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
             _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-            _mockTagService.Setup(ts => ts.ValidateAndCreateTagsAsync(It.IsAny<List<string>>()))
-                .ReturnsAsync([new Tag { Id = 2, Name = "newTag" }]);
-
             var newTags = new List<string> { "newTag" };
+            _mockTagService.Setup(ts => ts.ValidateAndCreateTagsAsync(It.IsAny<List<string>>()))
+                .ReturnsAsync(newTags.Select(tag => new Tag { Id = 2, Name = tag }).ToList());
+
+            // Ensure snippet tags are correctly updated in the snippet entity
+            snippetForAddingTags.SnippetTags = newTags.Select(tag => new SnippetTag
+            {
+                Tag = new Tag { Id = 2, Name = tag },
+                TagId = 2
+            }).ToList();
 
             // Act
             var result = await _snippetService.AddTagsToSnippetAsync(snippetForAddingTags.Id, newTags);
