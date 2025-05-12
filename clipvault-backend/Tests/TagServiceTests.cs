@@ -8,7 +8,7 @@ namespace ClipVault.Tests
     public class TagServiceTests
     {
         private readonly Mock<IAppDbContext> _mockDbContext;
-        private readonly TagService _tagService;
+        private readonly ITagService _tagService;
 
         public TagServiceTests()
         {

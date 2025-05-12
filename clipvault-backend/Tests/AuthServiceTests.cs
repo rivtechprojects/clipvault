@@ -13,7 +13,7 @@ namespace ClipVault.Tests
         private readonly Mock<IAppDbContext> _mockDbContext;
         private readonly Mock<IConfiguration> _mockConfiguration;
         private readonly Mock<IPasswordHasher<User>> _mockPasswordHasher;
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
 
         public AuthServiceTests()
         {

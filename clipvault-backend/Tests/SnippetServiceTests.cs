@@ -13,7 +13,7 @@ namespace ClipVault.Tests
         private readonly Mock<IAppDbContext> _mockDbContext;
         private readonly Mock<ITagService> _mockTagService;
         private readonly Mock<ISnippetMapper> _mockSnippetMapper;
-        private readonly SnippetService _snippetService;
+        private readonly ISnippetService _snippetService;
 
         public SnippetServiceTests()
         {
@@ -126,7 +126,7 @@ namespace ClipVault.Tests
             // Arrange
             var language = TestDataHelper.CreateLanguage();
             var snippetWithLanguage = TestDataHelper.CreateSnippet(new SnippetCreateDto { Title = "Snippet 1", Code = "Code 1", Language = "C#", TagNames = new List<string> { "example" } }, language);
-            snippetWithLanguage.Language = language; // Ensure Language is properly set
+            snippetWithLanguage.Language = language;
 
             var snippets = new List<Snippet> { snippetWithLanguage }.AsQueryable();
             var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets);
