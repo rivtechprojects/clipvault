@@ -110,7 +110,7 @@ jobs:
 
     - name: Upload TypeScript Coverage Report
       if: matrix.language == 'typescript' && steps.check_typescript_tests.outputs.has_tests == 'true'
-      uses: actions/upload-artifact@v3.1.0
+      uses: actions/upload-artifact@v3
       with:
         name: typescript-coverage
         path: typescript-coverage.tar.gz
