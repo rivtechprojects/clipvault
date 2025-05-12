@@ -205,9 +205,12 @@ namespace ClipVault.Tests
             var language = TestDataHelper.CreateLanguage();
             language.Name = "C#";
 
-            var snippetWithTags = TestDataHelper.CreateSnippet(new SnippetCreateDto { Title = "Keyword Match", Code = "Code 1", Language = "C#", TagNames = new List<string> { "example" } }, language);
+            var snippetWithTags = TestDataHelper.CreateSnippet(new SnippetCreateDto { Title = "Keyword Match", Code = "Code 1", Language = "C#", TagNames = new List<string> { "example", "automation" } }, language);
             snippetWithTags.Language = language;
-            snippetWithTags.SnippetTags = [new SnippetTag { Tag = new Tag { Name = "example" } }]; // Ensure SnippetTags and Tag are initialized
+            snippetWithTags.SnippetTags = [
+                new SnippetTag { Tag = new Tag { Name = "example" } },
+                new SnippetTag { Tag = new Tag { Name = "automation" } }
+            ];
 
             var snippet2 = TestDataHelper.CreateSnippet(new SnippetCreateDto { Title = "No Match", Code = "Code 2", Language = "C#", TagNames = new List<string> { "test" } }, language);
             snippet2.Language = language;
@@ -236,13 +239,23 @@ namespace ClipVault.Tests
                 }
             });
 
-            // Act
+            // Act & Assert
+            // Scenario 1: Single matching tag
             var result = await _snippetService.SearchSnippetsAsync("keyword", "c#", ["example"]);
-
-            // Assert
             Assert.NotNull(result);
             Assert.Single(result);
             Assert.Equal("keyword match", result[0].Title);
+
+            // Scenario 2: Multiple matching tags
+            result = await _snippetService.SearchSnippetsAsync("keyword", "c#", ["example", "automation"]);
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal("keyword match", result[0].Title);
+
+            // Scenario 3: No matching tags
+            result = await _snippetService.SearchSnippetsAsync("keyword", "c#", ["nonexistent"]);
+            Assert.NotNull(result);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -290,12 +303,17 @@ namespace ClipVault.Tests
             var newTags = new List<string> { "newTag" };
 
             // Act
-            await _snippetService.AddTagsToSnippetAsync(snippetForAddingTags.Id, newTags);
+            var result = await _snippetService.AddTagsToSnippetAsync(snippetForAddingTags.Id, newTags);
 
             // Assert
             _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
             Assert.Single(snippetForAddingTags.SnippetTags);
             Assert.Equal(2, snippetForAddingTags.SnippetTags[0].TagId);
+
+            // Verify the returned SnippetResponseDto
+            Assert.NotNull(result);
+            Assert.Equal(snippetForAddingTags.Id, result.Id);
+            Assert.Contains("newTag", result.Tags);
         }
 
         [Fact]
