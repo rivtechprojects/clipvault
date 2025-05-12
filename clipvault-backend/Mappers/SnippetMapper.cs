@@ -2,6 +2,8 @@ using ClipVault.Dtos;
 using ClipVault.Interfaces;
 using ClipVault.Models;
 
+namespace ClipVault.Mappers;
+
 
 public class SnippetMapper : ISnippetMapper
 {

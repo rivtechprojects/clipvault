@@ -78,7 +78,12 @@ namespace ClipVault.Tests.Mocks
                 Id = 1,
                 Title = snippetDto.Title,
                 Code = snippetDto.Code,
-                LanguageId = language.Id
+                LanguageId = language.Id,
+                SnippetTags = snippetDto.TagNames.Select((tagName, index) => new SnippetTag
+                {
+                    TagId = index + 1,
+                    Tag = new Tag { Id = index + 1, Name = tagName }
+                }).ToList()
             };
         }
 
@@ -109,6 +114,17 @@ namespace ClipVault.Tests.Mocks
                 UserName = registerDto.UserName,
                 Email = registerDto.Email,
                 PasswordHash = "hashedpassword"
+            };
+        }
+
+        public static SnippetUpdateDto CreateSnippetUpdateDto(SnippetResponseDto response)
+        {
+            return new SnippetUpdateDto
+            {
+                Title = response.Title,
+                Code = response.Code,
+                Language = response.Language,
+                TagNames = response.Tags
             };
         }
     }
