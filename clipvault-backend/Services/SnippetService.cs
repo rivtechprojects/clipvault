@@ -194,8 +194,11 @@ public class SnippetService : ISnippetService
     // Delete a snippet
     public async Task<bool> DeleteSnippetAsync(int id)
     {
-        var snippet = await _context.Snippets.FindAsync(id)
+        var snippet = await _context.Snippets
+            .Include(s => s.SnippetTags)
+            .FirstOrDefaultAsync(s => s.Id == id)
             ?? throw new NotFoundException($"Snippet with ID {id} not found.");
+
         _context.Snippets.Remove(snippet);
         await _context.SaveChangesAsync();
         return true;
@@ -206,22 +209,20 @@ public class SnippetService : ISnippetService
         var query = _context.Snippets
             .Include(s => s.SnippetTags)
             .ThenInclude(st => st.Tag)
+            .Include(s => s.Language)
             .AsQueryable();
 
-        // Search for keyword in the title or code body of the snippet
         if (!string.IsNullOrEmpty(keyword))
         {
             query = query.Where(s => s.Title.Contains(keyword) || s.Code.Contains(keyword));
         }
 
-        // Filter snippets by exact language match (case-insensitive)
         if (!string.IsNullOrEmpty(language))
         {
             var normalizedLanguage = language.ToLower();
             query = query.Where(s => s.Language.Name.ToLower() == normalizedLanguage);
         }
 
-        // Filter snippets to match all provided tags (case-insensitive)
         if (tagNames != null && tagNames.Count > 0)
         {
             var normalizedTagNames = tagNames.Select(t => t.ToLower()).ToList();
@@ -230,7 +231,7 @@ public class SnippetService : ISnippetService
         }
 
         var snippets = await query.ToListAsync();
-        return snippets.Select(_snippetMapper.MapToSnippetResponseDto).ToList();
+        return [.. snippets.Select(_snippetMapper.MapToSnippetResponseDto)];
     }
 
 }
