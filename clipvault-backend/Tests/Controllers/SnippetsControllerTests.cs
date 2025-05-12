@@ -72,7 +72,7 @@ namespace ClipVault.Tests.Controllers
         public async Task GetSnippetById_InvalidId_ThrowsNotFoundException()
         {
             // Arrange
-            _snippetServiceMock.Setup(s => s.GetSnippetByIdAsync(1)).ReturnsAsync(null);
+            _snippetServiceMock.Setup(s => s.GetSnippetByIdAsync(1)).ReturnsAsync((SnippetResponseDto?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(() => _snippetsController.GetSnippetById(1));
