@@ -21,10 +21,9 @@ namespace ClipVault.Tests.Mappers
             _mapperMock.Setup(m => m.MapToSnippetResponseDto(It.IsAny<Snippet>()))
                 .Returns((Snippet snippet) => TestDataHelper.CreateSnippetResponseDto(snippet));
 
-            // Mock setup for MapToSnippetEntity
             _mapperMock.Setup(m => m.MapToSnippetEntity(It.IsAny<SnippetCreateDto>(), It.IsAny<int>(), It.IsAny<List<Tag>>()))
-                .Returns((SnippetCreateDto dto, int languageId, List<Tag> tags) => TestDataHelper.CreateSnippet(dto, TestDataHelper.CreateLanguage()));
-
+            .Returns((SnippetCreateDto dto, int languageId, List<Tag> tags) =>
+                TestDataHelper.CreateSnippet(dto, languageId, tags));
             // Mock setup for MapToUpdateDto
             _mapperMock.Setup(m => m.MapToUpdateDto(It.IsAny<SnippetResponseDto>()))
                 .Returns((SnippetResponseDto response) => TestDataHelper.CreateSnippetUpdateDto(response));
@@ -36,7 +35,8 @@ namespace ClipVault.Tests.Mappers
             // Arrange
             var snippetDto = TestDataHelper.CreateSnippetCreateDto();
             var language = TestDataHelper.CreateLanguage();
-            var snippet = TestDataHelper.CreateSnippet(snippetDto, language);
+            var tags = TestDataHelper.CreateTags();
+            var snippet = TestDataHelper.CreateSnippet(snippetDto, language.Id, tags);
             snippet.SnippetTags = new List<SnippetTag>
             {
                 new SnippetTag { Tag = new Tag { Name = "Tag1" } },
