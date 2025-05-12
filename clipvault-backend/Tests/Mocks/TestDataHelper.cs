@@ -12,8 +12,49 @@ namespace ClipVault.Tests.Mocks
                 Title = "Test Snippet",
                 Code = "Console.WriteLine(\"Hello World\");",
                 Language = "C#",
-                TagNames = ["example", "test"]
+                TagNames = new List<string> { "example", "test" }
             };
+        }
+
+        public static SnippetResponseDto CreateSnippetResponseDto()
+        {
+            return new SnippetResponseDto
+            {
+                Id = 1,
+                Title = "Test Snippet",
+                Code = "Console.WriteLine(\"Hello World\");",
+                Language = "C#",
+                Tags = new List<string> { "example", "test" }
+            };
+        }
+
+        public static SnippetResponseDto CreateSnippetResponseDto(Snippet snippet)
+        {
+            return new SnippetResponseDto
+            {
+                Id = snippet.Id,
+                Title = snippet.Title,
+                Code = snippet.Code,
+                Language = snippet.Language?.Name ?? "",
+                Tags = snippet.SnippetTags.Select(st => st.Tag?.Name ?? "").ToList()
+            };
+        }
+
+        public static List<SnippetResponseDto> CreateSnippetResponseDtoList(int count = 1)
+        {
+            var snippets = new List<SnippetResponseDto>();
+            for (int i = 0; i < count; i++)
+            {
+                snippets.Add(new SnippetResponseDto
+                {
+                    Id = i + 1,
+                    Title = $"Test Snippet {i + 1}",
+                    Code = $"Console.WriteLine(\"Hello World {i + 1}\");",
+                    Language = "C#",
+                    Tags = new List<string> { "example", "test" }
+                });
+            }
+            return snippets;
         }
 
         public static Language CreateLanguage()
@@ -38,6 +79,36 @@ namespace ClipVault.Tests.Mocks
                 Title = snippetDto.Title,
                 Code = snippetDto.Code,
                 LanguageId = language.Id
+            };
+        }
+
+        public static RegisterDto CreateRegisterDto()
+        {
+            return new RegisterDto
+            {
+                UserName = "testuser",
+                Email = "test@example.com",
+                Password = "password123"
+            };
+        }
+
+        public static LoginDto CreateLoginDto()
+        {
+            return new LoginDto
+            {
+                UserNameOrEmail = "testuser",
+                Password = "password123"
+            };
+        }
+
+        public static User CreateUser(RegisterDto? registerDto = null)
+        {
+            registerDto ??= CreateRegisterDto();
+            return new User
+            {
+                UserName = registerDto.UserName,
+                Email = registerDto.Email,
+                PasswordHash = "hashedpassword"
             };
         }
     }
