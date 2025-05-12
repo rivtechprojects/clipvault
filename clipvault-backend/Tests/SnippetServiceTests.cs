@@ -103,7 +103,6 @@ namespace ClipVault.Tests
         {
             // Arrange
             var language = TestDataHelper.CreateLanguage();
-            var tags = TestDataHelper.CreateTags();
             var snippet1 = TestDataHelper.CreateSnippet(new SnippetCreateDto { Title = "Snippet 1", Code = "Code 1", Language = "C#", TagNames = new List<string> { "example" } }, language);
             var snippet2 = TestDataHelper.CreateSnippet(new SnippetCreateDto { Title = "Snippet 2", Code = "Code 2", Language = "C#", TagNames = new List<string> { "test" } }, language);
 
