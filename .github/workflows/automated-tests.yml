@@ -41,10 +41,17 @@ jobs:
           echo "::set-output name=has_tests::true"
         fi
 
-    # Run C# Tests only if test files exist
-    - name: Run C# Tests
+    # Run C# Tests with Coverage
+    - name: Run C# Tests with Coverage
       if: matrix.language == 'csharp' && steps.check_csharp_tests.outputs.has_tests == 'true'
-      run: dotnet test --verbosity normal
+      run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+    - name: Upload C# Coverage Report
+      if: matrix.language == 'csharp'
+      uses: actions/upload-artifact@v3
+      with:
+        name: csharp-coverage
+        path: ./TestResults
 
     # Setup for TypeScript tests
     - name: Setup Node.js
@@ -68,8 +75,15 @@ jobs:
           echo "::set-output name=has_tests::true"
         fi
 
-    # Run TypeScript Tests only if test files exist
-    - name: Run TypeScript Tests
+    # Run TypeScript Tests with Coverage
+    - name: Run TypeScript Tests with Coverage
       if: matrix.language == 'typescript' && steps.check_typescript_tests.outputs.has_tests == 'true'
       working-directory: clipvault-frontend
-      run: npm test
+      run: npm test -- --coverage
+
+    - name: Upload TypeScript Coverage Report
+      if: matrix.language == 'typescript'
+      uses: actions/upload-artifact@v3
+      with:
+        name: typescript-coverage
+        path: clipvault-frontend/coverage
