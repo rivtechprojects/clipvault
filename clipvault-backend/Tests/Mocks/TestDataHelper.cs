@@ -64,21 +64,31 @@ namespace ClipVault.Tests.Mocks
 
         public static List<Tag> CreateTags()
         {
-            return
-            [
+            return new List<Tag>
+            {
                 new Tag { Id = 1, Name = "example" },
-                new Tag { Id = 2, Name = "test" }
-            ];
+                new Tag { Id = 2, Name = "test" },
+            };
         }
 
-        public static Snippet CreateSnippet(SnippetCreateDto snippetDto, Language language)
+        public static List<Tag> CreateTags(List<Tag> tags)
+        {
+            return tags.Select(tag => new Tag { Id = tag.Id, Name = tag.Name }).ToList();
+        }
+        public static Snippet CreateSnippet(SnippetCreateDto snippetDto, int languageId, List<Tag> tags)
         {
             return new Snippet
             {
                 Id = 1,
                 Title = snippetDto.Title,
                 Code = snippetDto.Code,
-                LanguageId = language.Id
+                LanguageId = languageId,
+                Language = new Language { Id = languageId, Name = snippetDto.Language },
+                SnippetTags = tags.Select(tag => new SnippetTag
+                {
+                    TagId = tag.Id, // Ensure TagId is set
+                    Tag = tag
+                }).ToList()
             };
         }
 
@@ -110,6 +120,89 @@ namespace ClipVault.Tests.Mocks
                 Email = registerDto.Email,
                 PasswordHash = "hashedpassword"
             };
+        }
+
+        public static SnippetUpdateDto CreateSnippetUpdateDto(SnippetResponseDto response)
+        {
+            return new SnippetUpdateDto
+            {
+                Title = response.Title,
+                Code = response.Code,
+                Language = response.Language,
+                TagNames = response.Tags
+            };
+        }
+
+        public static List<Snippet> CreateSnippetList()
+        {
+            var language1 = new Language { Id = 1, Name = "C#" };
+            var language2 = new Language { Id = 2, Name = "Python" };
+
+            var tags1 = new List<Tag>
+            {
+                new Tag { Id = 1, Name = "example" },
+                new Tag { Id = 2, Name = "test" }
+            };
+
+            var tags2 = new List<Tag>
+            {
+                new Tag { Id = 3, Name = "automation" },
+                new Tag { Id = 4, Name = "scripting" }
+            };
+
+            var snippet1 = new Snippet
+            {
+                Id = 1,
+                Title = "Snippet 1",
+                Code = "Code 1",
+                LanguageId = language2.Id,
+                Language = language2,
+                SnippetTags = tags2.Select(tag => new SnippetTag
+                {
+                    TagId = tag.Id,
+                    Tag = tag
+                }).ToList()
+            };
+
+            var snippet2 = new Snippet
+            {
+                Id = 2,
+                Title = "Snippet 2",
+                Code = "Code 2",
+                LanguageId = language1.Id,
+                Language = language1,
+                SnippetTags = tags1.Select(tag => new SnippetTag
+                {
+                    TagId = tag.Id,
+                    Tag = tag
+                }).ToList()
+            };
+
+            var snippet3 = new Snippet
+            {
+                Id = 3,
+                Title = "Snippet 3",
+                Code = "Code 3",
+                LanguageId = language1.Id,
+                Language = language1,
+                SnippetTags = new List<SnippetTag>() // Empty for AddTagsToSnippetAsync test
+            };
+
+            return new List<Snippet> { snippet1, snippet2, snippet3 };
+        }
+
+        public static void AddTagsToSnippet(List<Snippet> snippets, int snippetId, List<Tag> tagsToAdd)
+        {
+            var snippet = snippets.FirstOrDefault(s => s.Id == snippetId);
+            if (snippet == null)
+            {
+                throw new ArgumentException($"Snippet with ID {snippetId} not found.");
+            }
+
+            foreach (var tag in tagsToAdd.Where(tag => !snippet.SnippetTags.Any(st => st.TagId == tag.Id)))
+            {
+                snippet.SnippetTags.Add(new SnippetTag { TagId = tag.Id, Tag = tag });
+            }
         }
     }
 }
