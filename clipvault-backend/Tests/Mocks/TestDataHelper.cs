@@ -199,12 +199,9 @@ namespace ClipVault.Tests.Mocks
                 throw new ArgumentException($"Snippet with ID {snippetId} not found.");
             }
 
-            foreach (var tag in tagsToAdd)
+            foreach (var tag in tagsToAdd.Where(tag => !snippet.SnippetTags.Any(st => st.TagId == tag.Id)))
             {
-                if (!snippet.SnippetTags.Any(st => st.TagId == tag.Id))
-                {
-                    snippet.SnippetTags.Add(new SnippetTag { TagId = tag.Id, Tag = tag });
-                }
+                snippet.SnippetTags.Add(new SnippetTag { TagId = tag.Id, Tag = tag });
             }
         }
     }
