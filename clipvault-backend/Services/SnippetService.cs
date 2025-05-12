@@ -130,7 +130,7 @@ public class SnippetService : ISnippetService
         return _snippetMapper.MapToSnippetResponseDto(existingSnippet);
     }
 
-    public async Task AddTagsToSnippetAsync(int snippetId, List<string> tagNames)
+    public async Task<SnippetResponseDto> AddTagsToSnippetAsync(int snippetId, List<string> tagNames)
     {
         var snippet = await GetSnippetEntityByIdAsync(snippetId);
         if (snippet == null)
@@ -140,15 +140,16 @@ public class SnippetService : ISnippetService
 
         var existingTags = await _tagService.ValidateAndCreateTagsAsync(tagNames);
 
-        foreach (var tag in existingTags)
-        {
-            if (!snippet.SnippetTags.Any(st => st.TagId == tag.Id))
-            {
-                snippet.SnippetTags.Add(new SnippetTag { TagId = tag.Id });
-            }
-        }
+        var tagsToAdd = existingTags
+            .Where(tag => !snippet.SnippetTags.Any(st => st.TagId == tag.Id))
+            .Select(tag => new SnippetTag { TagId = tag.Id });
+
+        snippet.SnippetTags.AddRange(tagsToAdd);
 
         await _context.SaveChangesAsync();
+
+        // Return the updated snippet as a DTO
+        return _snippetMapper.MapToSnippetResponseDto(snippet);
     }
 
     public async Task RemoveTagsFromSnippetAsync(int snippetId, List<string> tagNames)
@@ -226,12 +227,11 @@ public class SnippetService : ISnippetService
         if (tagNames != null && tagNames.Count > 0)
         {
             var normalizedTagNames = tagNames.Select(t => t.ToLower()).ToList();
-            query = query.Where(s => normalizedTagNames.All(tagName =>
-                s.SnippetTags.Any(st => st.Tag != null && st.Tag.Name.ToLower() == tagName)));
+            query = query.Where(s => s.SnippetTags.Any(st => st.Tag != null && normalizedTagNames.Contains(st.Tag.Name.ToLower())));
         }
 
         var snippets = await query.ToListAsync();
-        return [.. snippets.Select(_snippetMapper.MapToSnippetResponseDto)];
+        return snippets.Select(_snippetMapper.MapToSnippetResponseDto).ToList();
     }
 
 }
