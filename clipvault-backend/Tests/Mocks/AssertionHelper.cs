@@ -1,6 +1,6 @@
 using ClipVault.Dtos;
+using ClipVault.Models;
 using Xunit;
-using System.Collections.Generic;
 
 namespace ClipVault.Tests.Mocks
 {
@@ -13,6 +13,14 @@ namespace ClipVault.Tests.Mocks
             Assert.Equal(expected.Code, actual.Code);
             Assert.Equal(expected.Language, actual.Language);
             Assert.Equal(expectedTags, actual.Tags);
+        }
+
+        public static void AssertUser(User actual, User expected)
+        {
+            Assert.NotNull(actual);
+            Assert.Equal(expected.UserName, actual.UserName);
+            Assert.Equal(expected.Email, actual.Email);
+            Assert.Equal(expected.PasswordHash, actual.PasswordHash);
         }
     }
 }

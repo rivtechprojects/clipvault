@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using ClipVault.DTOs;
+using ClipVault.Dtos;
 using ClipVault.Interfaces;
 
-namespace clipvault_backend.Controllers;
+namespace ClipVault.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
