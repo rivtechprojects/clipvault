@@ -236,10 +236,6 @@ namespace ClipVault.Tests
             Assert.Equal("keyword match", result[0].Title);
 
             // Scenario 2: Multiple matching tags
-            Assert.Single(result);
-            Assert.Equal("keyword match", result[0].Title);
-
-            // Scenario 2: Multiple matching tags
             result = await _snippetService.SearchSnippetsAsync("keyword", "c#", ["example", "automation"]);
             Assert.NotNull(result);
             Assert.Single(result);
