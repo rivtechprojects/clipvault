@@ -66,7 +66,7 @@ jobs:
 
     - name: Upload C# Coverage Report
       if: matrix.language == 'csharp' && steps.check_csharp_tests.outputs.has_tests == 'true'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: csharp-coverage
         path: csharp-coverage.tar.gz
@@ -117,7 +117,7 @@ jobs:
 
     - name: Upload TypeScript Coverage Report
       if: matrix.language == 'typescript' && steps.check_typescript_tests.outputs.has_tests == 'true'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: typescript-coverage
         path: typescript-coverage.tar.gz
