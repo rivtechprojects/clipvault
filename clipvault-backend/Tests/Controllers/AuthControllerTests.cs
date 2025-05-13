@@ -94,7 +94,9 @@ namespace ClipVault.Tests
                 .ReturnsAsync(user);
             _authServiceMock.Setup(s => s.GenerateJwtToken(user)).Returns(newAccessToken);
             _authServiceMock.Setup(s => s.UpdateRefreshTokenAsync(user, It.IsAny<string>()))
-                .Callback<User, string>((u, token) => u.RefreshToken = token);
+                .Callback<User, string>((u, token) => u.RefreshToken = token)
+                .Returns(Task.CompletedTask);
+            _authServiceMock.Setup(s => s.GenerateRefreshToken()).Returns(newRefreshToken);
 
             // Act
             var result = await _authController.RefreshToken(refreshTokenDto);
