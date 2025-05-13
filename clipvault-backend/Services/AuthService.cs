@@ -196,7 +196,6 @@ public class AuthService : IAuthService
     {
         user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
         await RevokeRefreshTokenAsync(user);
-        await _context.SaveChangesAsync();
     }
 }
 
