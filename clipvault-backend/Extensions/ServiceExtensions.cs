@@ -3,6 +3,7 @@ using ClipVault.Services;
 using Microsoft.AspNetCore.Identity;
 using ClipVault.Models;
 using ClipVault.Mappers;
+using ClipVault.Utils;
 
 namespace ClipVault.Extensions;
 
@@ -21,6 +22,7 @@ public static class ServiceExtensions
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<ISnippetMapper, SnippetMapper>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IHashingService, SHA256HashingService>();
 
         // Register IPasswordHasher
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();

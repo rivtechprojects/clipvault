@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using ClipVault.Interfaces;
 using ClipVault.Utils;
 using ClipVault.Exceptions;
+using System.Security.Cryptography;
 
 namespace ClipVault.Services;
 
@@ -17,12 +18,14 @@ public class AuthService : IAuthService
     private readonly IAppDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IPasswordHasher<User> _passwordHasher;
+    private readonly IHashingService _hashingService;
 
-    public AuthService(IAppDbContext context, IConfiguration configuration, IPasswordHasher<User> passwordHasher)
+    public AuthService(IAppDbContext context, IConfiguration configuration, IPasswordHasher<User> passwordHasher, IHashingService hashingService)
     {
         _context = context;
         _configuration = configuration;
         _passwordHasher = passwordHasher;
+        _hashingService = hashingService;
     }
 
     public async Task<User> RegisterUserAsync(string username, string email, string password)
@@ -79,7 +82,46 @@ public class AuthService : IAuthService
         }
     }
 
-    private string GenerateJwtToken(User user)
+    public async Task<(string AccessToken, string RefreshToken)> LoginUserWithRefreshTokenAsync(string usernameOrEmail, string password)
+    {
+        try
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == usernameOrEmail || u.Email == usernameOrEmail);
+            if (user == null)
+                throw new InvalidCredentialsException("Invalid username or password.");
+
+            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+            if (result == PasswordVerificationResult.Failed)
+                throw new InvalidCredentialsException("Invalid username or password.");
+
+            var refreshToken = GenerateRefreshToken();
+            await UpdateRefreshTokenAsync(user, refreshToken);
+            var accessToken = GenerateJwtToken(user);
+
+            return (accessToken, refreshToken);
+        }
+        catch (InvalidCredentialsException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new LoginFailedException("An unexpected error occurred during login.", ex);
+        }
+    }
+
+    public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
+    {
+        var hashedToken = _hashingService.Hash(refreshToken);
+        return await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == hashedToken);
+    }
+
+    public async Task<User?> GetUserByIdAsync(int userId)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+    }
+
+    public string GenerateJwtToken(User user)
     {
         var jwtSettings = _configuration.GetSection("Jwt");
 
@@ -118,6 +160,42 @@ public class AuthService : IAuthService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var randomBytes = new byte[32];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomBytes);
+        }
+        return Convert.ToBase64String(randomBytes);
+    }
+
+    public async Task UpdateRefreshTokenAsync(User user, string refreshToken)
+    {
+        user.RefreshToken = _hashingService.Hash(refreshToken);
+        user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7); // Example expiry
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RevokeRefreshTokenAsync(User user)
+    {
+        user.RefreshToken = null;
+        user.RefreshTokenExpiry = null;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task LogoutUserAsync(User user)
+    {
+        await RevokeRefreshTokenAsync(user);
+    }
+
+    public async Task ChangePasswordAsync(User user, string newPassword)
+    {
+        user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
+        await RevokeRefreshTokenAsync(user);
     }
 }
 

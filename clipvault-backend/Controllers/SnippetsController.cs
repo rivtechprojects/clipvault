@@ -26,7 +26,6 @@ public class SnippetsController : ControllerBase
         return CreatedAtAction(nameof(GetSnippetById), new { id = response.Id }, response);
     }
 
-    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAllSnippets()
     {
