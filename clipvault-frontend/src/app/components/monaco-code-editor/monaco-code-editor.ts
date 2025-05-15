@@ -5,7 +5,7 @@ import * as monaco from 'monaco-editor';
   selector: 'app-monaco-code-editor',
   standalone: true,
   templateUrl: './monaco-code-editor.html',
-  styleUrl: './monaco-code-editor.scss'
+  styleUrls: ['./monaco-code-editor.scss']
 })
 export class MonacoCodeEditor implements AfterViewInit, OnDestroy, OnChanges {
   @ViewChild('editorContainer', { static: true }) editorContainer?: ElementRef<HTMLDivElement>;
