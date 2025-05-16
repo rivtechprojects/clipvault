@@ -20,7 +20,7 @@ import { NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig } from 'ngx-monaco-edit
     MatSelectModule, 
     FormsModule],
   templateUrl: './snippet.html',
-  styleUrl: './snippet.scss',
+  styleUrls: ['./snippet.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [
     {
