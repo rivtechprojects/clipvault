@@ -8,6 +8,14 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="assets/monaco-editor/min/vs/editor/editor.main.css">
+  <script>
+  window.MonacoEnvironment = {
+    getWorkerUrl: function (moduleId, label) {
+      return `/assets/monaco-editor/min/vs/base/worker/workerMain.js`;
+    }
+  };
+</script>
 </head>
 <body>
   <app-root></app-root>

@@ -45,7 +45,7 @@ jobs:
         node-version: '18'
     - name: Install npm dependencies
       working-directory: clipvault-frontend
-      run: npm install
+      run: npm install --legacy-peer-deps
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3

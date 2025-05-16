@@ -1,23 +1,28 @@
 .snippet-gallery-layout {
   display: flex;
   height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
-  background: #f5f5f5;
   padding: 20px;
   min-width: 220px;
   max-width: 260px;
   box-sizing: border-box;
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .sidebar.left {
-  border-right: 1px solid #ddd;
+  border-right: 1px solid #333;
+  max-width: 260px;
+  min-width: 180px;
 }
 
 .sidebar.right {
-  border-left: 1px solid #ddd;
+  border-left: 1px solid #333;
+  max-width: 260px;
+  min-width: 180px;
 }
 
 .editor-panel {
@@ -25,7 +30,17 @@
   display: flex;
   flex-direction: column;
   padding: 24px 32px;
-  background: #fff;
+  /* background and color removed to use Material theme */
+}
+
+.gallery-panel {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .snippet-header {
@@ -58,7 +73,10 @@
   font-family: 'Fira Mono', 'Consolas', monospace;
   font-size: 1em;
   padding: 12px;
-  border: 1px solid #ccc;
+  /* Remove background and border overrides for dark theme */
+  background: unset;
+  color: unset;
+  border: unset;
   border-radius: 4px;
   resize: vertical;
   min-height: 300px;
@@ -68,13 +86,14 @@
 .editor-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255,255,255,0.8);
+  /* Use a dark overlay for dark mode */
+  background: rgba(30,30,30,0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
   font-weight: bold;
-  color: #888;
+  color: #ccc;
 }
 
 .editor-actions {
@@ -95,19 +114,60 @@
 .tags-section li {
   margin-bottom: 6px;
   cursor: pointer;
-  color: #0078d4;
+  color: #90caf9;
+}
+
+.snippets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 18px;
+  padding: 18px 0;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+@media (min-width: 900px) {
+  .snippets-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 899px) and (min-width: 600px) {
+  .snippets-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 599px) {
+  .snippets-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.snippet-card {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1200px) {
+  .sidebar.left, .sidebar.right {
+    max-width: 180px;
+    min-width: 120px;
+  }
 }
 
 @media (max-width: 900px) {
   .snippet-gallery-layout {
     flex-direction: column;
+    height: auto;
   }
-  .sidebar {
+  .sidebar.left, .sidebar.right {
     max-width: none;
     min-width: 0;
     border: none;
   }
-  .editor-panel {
-    padding: 12px 8px;
+  .gallery-panel {
+    padding: 12px 4px;
   }
 }

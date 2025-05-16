@@ -1,1 +1,50 @@
-<p>snippet works!</p>
+<div class="snippet-card" [class.expanded]="expanded">
+  <div class="snippet-title">{{ snippet?.title }}</div>
+  @if (snippet?.description) {
+    <div class="snippet-description">{{ snippet.description }}</div>
+  }
+  <div class="language-select">
+    <mat-select
+      [(ngModel)]="snippet.language"
+      disableOptionCentering
+      panelClass="language-select-panel"
+      [ngModelOptions]="{standalone: true}"
+    >
+      <mat-select-trigger>
+        <span>{{ snippet.language }}</span>
+      </mat-select-trigger>
+      @for (lang of languages; track lang.value) {
+        <mat-option [value]="lang.value">
+          {{ lang.label }}
+        </mat-option>
+      }
+    </mat-select>
+  </div>
+  <div class="snippet-editor" [ngStyle]="{'height': expanded ? '400px' : '200px', 'width': '100%'}">
+    <ngx-monaco-editor
+      [options]="{theme: 'vs-dark', readOnly: true, minimap: {enabled: false}, language: snippet?.language || 'javascript'}"
+      [model]="{ value: snippet?.code || '', language: snippet?.language || 'javascript' }"
+    ></ngx-monaco-editor>
+  </div>
+  <div class="snippet-tags-row">
+    @if (snippet?.tags?.length) {
+      <mat-chip-list>
+        @for (tag of snippet.tags; track tag) {
+          <mat-chip>{{ tag }}</mat-chip>
+        }
+      </mat-chip-list>
+    }
+  </div>
+  <div class="snippet-actions">
+    @if (!expanded) {
+      <button mat-icon-button (click)="onExpand()" aria-label="Expand snippet">
+        <mat-icon>open_in_full</mat-icon>
+      </button>
+    }
+    @if (expanded) {
+      <button mat-icon-button (click)="onClose()" aria-label="Close">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </div>
+</div>

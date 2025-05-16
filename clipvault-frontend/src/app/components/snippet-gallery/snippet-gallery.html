@@ -1,59 +1,45 @@
-<div class="snippet-gallery-layout">
-  <!-- Left Sidebar: Collections/Folder Tree -->
-  <aside class="sidebar left">
-    <h3>Collections</h3>
-    <div class="collections-tree">
-      <!-- TODO: Render folder/collection structure here -->
-      <ul>
-        <li>Personal Snippets</li>
-        <li>Work</li>
-        <li>Demo Collection</li>
-      </ul>
-    </div>
+<div class="snippet-gallery-layout mat-app-background mat-typography">
+  <aside class="sidebar left mat-elevation-z2">
+    <mat-toolbar color="primary">Collections</mat-toolbar>
+    <mat-nav-list class="collections-tree">
+      <mat-list-item>Personal Snippets</mat-list-item>
+      <mat-list-item>Work</mat-list-item>
+      <mat-list-item>Demo Collection</mat-list-item>
+    </mat-nav-list>
   </aside>
-
-  <!-- Center: Code Editor -->
-  <main class="editor-panel">
-    <div class="snippet-header">
-      <input type="text" class="snippet-title" placeholder="Snippet Title" />
-      <select class="language-select" [(ngModel)]="language">
-        <option value="javascript">JavaScript</option>
-        <option value="python">Python</option>
-        <option value="typescript">TypeScript</option>
-        <option value="html">HTML</option>
-        <option value="css">CSS</option>
-        <!-- Add more languages as needed -->
-      </select>
-      <input type="text" class="tags-input" placeholder="Tags (comma separated)" />
+  <main class="gallery-panel mat-elevation-z2">
+    <div class="snippets-grid">
+      @for (snippet of snippets; track snippet) {
+        <app-snippet
+          [snippet]="snippet"
+          (expand)="expandSnippet(snippet)"
+        ></app-snippet>
+      }
     </div>
-    <div class="code-editor">
-      <app-monaco-code-editor
-        [(value)]="code"
-        [language]="language"
-        style="width:100%;height:400px;display:block;"
-      ></app-monaco-code-editor>
-    </div>
-    <div class="editor-actions">
-      <button [disabled]="!isAuthenticated" title="Login to save your snippet">Save</button>
-      <button [disabled]="!isAuthenticated" title="Login to delete your snippet">Delete</button>
-    </div>
+    @if (expandedSnippet) {
+      <div class="snippet-modal-backdrop" (click)="closeModal()"></div>
+      <div class="snippet-modal mat-elevation-z4">
+        <app-snippet [snippet]="expandedSnippet" [expanded]="true" (close)="closeModal()"></app-snippet>
+      </div>
+    }
   </main>
-
-  <!-- Right Sidebar: Search & Tagging -->
-  <aside class="sidebar right">
+  <aside class="sidebar right mat-elevation-z2">
+    <mat-toolbar color="primary">Search & Tags</mat-toolbar>
     <div class="search-section">
-      <input type="text" placeholder="Search snippets..." />
-      <button>Search</button>
+      <mat-form-field appearance="outline" style="width:100%;">
+        <mat-label>Search snippets...</mat-label>
+        <input matInput />
+      </mat-form-field>
+      <button mat-raised-button style="margin-top:8px;">Search</button>
     </div>
     <div class="tags-section">
       <h4>Tags</h4>
-      <!-- TODO: Render tags and filtering here -->
-      <ul>
-        <li>All</li>
-        <li>Frontend</li>
-        <li>Backend</li>
-        <li>Demo</li>
-      </ul>
+      <mat-chip-list>
+        <mat-chip color="primary" selected>All</mat-chip>
+        <mat-chip>Frontend</mat-chip>
+        <mat-chip>Backend</mat-chip>
+        <mat-chip>Demo</mat-chip>
+      </mat-chip-list>
     </div>
   </aside>
 </div>
