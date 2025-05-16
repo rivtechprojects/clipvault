@@ -55,7 +55,7 @@ jobs:
     - name: Install TypeScript dependencies
       if: matrix.language == 'typescript'
       working-directory: clipvault-frontend
-      run: npm install --force
+      run: npm install --legacy-peer-deps
 
     # Check for TypeScript test files
     - name: Check for TypeScript test files
