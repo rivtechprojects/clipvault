@@ -5,6 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Snippet } from '../snippet/snippet';
+import { snippetMock } from '../../../Mocks/snippet.mock';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -25,30 +26,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './snippet-gallery.scss'
 })
 export class SnippetGallery {
-  snippets = [
-    {
-      title: 'Async Await Example',
-      language: 'javascript',
-      code: 'async function fetchData() {\n  const res = await fetch(\'...\');\n  return res.json();\n}',
-      tags: ['async', 'js', 'demo'],
-      description: 'A simple async/await usage in JavaScript.'
-    },
-    {
-      title: 'Python List Comprehension',
-      language: 'python',
-      code: '[x*x for x in range(10)]',
-      tags: ['python', 'list', 'demo'],
-      description: 'Quickly generate a list of squares in Python.'
-    },
-    {
-      title: 'TypeScript Interface',
-      language: 'typescript',
-      code: 'interface User {\n  id: number;\n  name: string;\n}',
-      tags: ['typescript', 'interface'],
-      description: 'A basic TypeScript interface.'
-    },
-    // Add more demo snippets as needed
-  ];
+  snippets = snippetMock;
   expandedSnippet: any = null;
 
   expandSnippet(snippet: any) {
