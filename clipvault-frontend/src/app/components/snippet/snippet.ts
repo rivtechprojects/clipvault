@@ -65,13 +65,7 @@ export class Snippet {
     this.snippet.tags = this.snippet.tags.filter((t: string) => t !== tag);
   }
 
-  addTagIfValid(tag: string) {
-    const trimmed = tag?.trim();
-    if (trimmed && (!this.snippet.tags || !this.snippet.tags.includes(trimmed))) {
-      if (!this.snippet.tags) this.snippet.tags = [];
-      this.snippet.tags.push(trimmed);
-    }
-  }
+// Removed the unused addTagIfValid method.
 
   addAndEditTag() {
     if (!this.snippet.tags) this.snippet.tags = [];
