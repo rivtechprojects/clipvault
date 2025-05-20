@@ -1,0 +1,31 @@
+.collections-tree {
+  display: block;
+}
+
+.collections-tree mat-list-item {
+  display: flex;
+  align-items: baseline;
+  width: 100%;
+  min-height: 48px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.collections-tree mat-list-item.selected {
+  background: none !important;
+  color: inherit;
+}
+
+.collections-tree .folder-icon {
+  margin-right: 8px;
+}
+
+.collections-tree .collection-name {
+  display: inline;
+  position: relative;
+  top: -6px;
+}
+
+.add-collection-form {
+  margin-top: 8px;
+}

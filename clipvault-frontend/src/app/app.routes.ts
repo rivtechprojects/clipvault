@@ -4,12 +4,14 @@ import { Component } from '@angular/core';
 
 @Component({
   standalone: true,
+  selector: 'app-login-placeholder',
   template: '<h2>Login Page Placeholder</h2>'
 })
 export class LoginPlaceholder {}
 
 @Component({
   standalone: true,
+  selector: 'app-register-placeholder',
   template: '<h2>Register Page Placeholder</h2>'
 })
 export class RegisterPlaceholder {}
