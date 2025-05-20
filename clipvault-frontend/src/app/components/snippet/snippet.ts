@@ -45,6 +45,9 @@ export class Snippet {
   editTagValue = '';
   editMode: boolean = false;
 
+  toggleEditMode() {
+    this.editMode = !this.editMode;
+  }
   onExpand() {
     this.expand.emit();
   }
