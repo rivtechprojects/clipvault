@@ -1,26 +1,20 @@
 <div class="snippet-gallery-layout mat-app-background mat-typography">
   <aside class="sidebar left mat-elevation-z2">
     <mat-toolbar color="primary">Collections</mat-toolbar>
-    <mat-nav-list class="collections-tree">
-      <mat-list-item>Personal Snippets</mat-list-item>
-      <mat-list-item>Work</mat-list-item>
-      <mat-list-item>Demo Collection</mat-list-item>
-    </mat-nav-list>
+    <app-collections-list
+      [collections]="collections"
+      [selectedCollection]="selectedCollection"
+      (selectCollection)="onSelectCollection($event)"
+      (addCollection)="onAddCollection($event)"
+      (selectSnippet)="selectSnippet($event)">
+    </app-collections-list>
   </aside>
   <main class="gallery-panel mat-elevation-z2">
-    <div class="snippets-grid">
-      @for (snippet of snippets; track snippet) {
-        <app-snippet
-          [snippet]="snippet"
-          (expand)="expandSnippet(snippet)"
-        ></app-snippet>
-      }
-    </div>
-    @if (expandedSnippet) {
-      <div class="snippet-modal-backdrop" (click)="closeModal()"></div>
-      <div class="snippet-modal mat-elevation-z4">
-        <app-snippet [snippet]="expandedSnippet" [expanded]="true" (close)="closeModal()"></app-snippet>
-      </div>
+    @if (selectedSnippet && selectedSnippet.title) {
+      <app-snippet [snippet]="selectedSnippet"></app-snippet>
+    }
+    @else {
+      <div class="empty-state">Select a snippet to view it here.</div>
     }
   </main>
   <aside class="sidebar right mat-elevation-z2">

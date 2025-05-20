@@ -15,14 +15,14 @@
 
 .sidebar.left {
   border-right: 1px solid #333;
-  max-width: 260px;
-  min-width: 180px;
+  max-width: 400px;
+  min-width: 320px;
 }
 
 .sidebar.right {
   border-left: 1px solid #333;
-  max-width: 260px;
-  min-width: 180px;
+  max-width: 400px;
+  min-width: 320px;
 }
 
 .editor-panel {
@@ -38,7 +38,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: 24px 16px;
+  padding: 24px 32px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -115,6 +115,16 @@
   margin-bottom: 6px;
   cursor: pointer;
   color: #90caf9;
+}
+
+.tags-section mat-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tags-section mat-chip {
+  margin: 0;
 }
 
 .snippets-grid {

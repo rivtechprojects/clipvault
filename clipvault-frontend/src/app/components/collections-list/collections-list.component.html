@@ -1,0 +1,32 @@
+<mat-nav-list class="collections-tree">
+  @for (collection of collections; track collection) {
+    <div>
+      <mat-list-item (click)="collection.expanded = !collection.expanded" [class.selected]="collection === selectedCollection">
+        <mat-icon class="expand-icon">{{ collection.expanded ? 'expand_more' : 'chevron_right' }}</mat-icon>
+        <mat-icon class="folder-icon">folder</mat-icon>
+        <span class="collection-name"><strong>{{ collection.name }}</strong></span>
+      </mat-list-item>
+      @if (collection.expanded && collection.snippets && collection.snippets.length > 0) {
+        <div class="sub-items" style="padding-left: 24px;">
+          @for (snippet of collection.snippets; track snippet) {
+            <mat-list-item (click)="selectSnippet.emit(snippet); $event.stopPropagation();" [class.selected]="snippet === selectedSnippet">
+              <mat-icon class="snippet-icon">description</mat-icon>
+              {{ snippet.title }}
+            </mat-list-item>
+          }
+        </div>
+      }
+    </div>
+  }
+</mat-nav-list>
+<button mat-stroked-button style="margin: 8px 0; width: 100%;" (click)="addCollectionPrompt = true">+ New Collection</button>
+@if (addCollectionPrompt) {
+  <div class="add-collection-form">
+    <mat-form-field appearance="outline" style="width:100%;">
+      <mat-label>Collection Name</mat-label>
+      <input matInput [(ngModel)]="newCollectionName" />
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="onAddCollection()">Add</button>
+    <button mat-button (click)="addCollectionPrompt = false; newCollectionName = ''">Cancel</button>
+  </div>
+}
