@@ -41,7 +41,6 @@ export class Snippet {
   @Output() close = new EventEmitter<void>();
 
   languages = languageMock;
-  addTagPrompt = false;
   newTagName = '';
   editTagIndex: number | null = null;
   editTagValue = '';
