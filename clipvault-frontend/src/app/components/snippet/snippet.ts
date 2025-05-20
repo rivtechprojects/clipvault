@@ -41,8 +41,6 @@ export class Snippet {
   @Output() close = new EventEmitter<void>();
 
   languages = languageMock;
-  addTagPrompt = false;
-  newTagName = '';
   editTagIndex: number | null = null;
   editTagValue = '';
 
@@ -63,33 +61,12 @@ export class Snippet {
     this.snippet.tags = this.snippet.tags.filter((t: string) => t !== tag);
   }
 
-  onAddTag() {
-    const tag = this.newTagName?.trim();
-    if (tag && (!this.snippet.tags || !this.snippet.tags.includes(tag))) {
+  addTagIfValid(tag: string) {
+    const trimmed = tag?.trim();
+    if (trimmed && (!this.snippet.tags || !this.snippet.tags.includes(trimmed))) {
       if (!this.snippet.tags) this.snippet.tags = [];
-      this.snippet.tags.push(tag);
+      this.snippet.tags.push(trimmed);
     }
-    this.addTagPrompt = false;
-    this.newTagName = '';
-  }
-
-  startAddTag() {
-    this.addTagPrompt = true;
-    this.newTagName = '';
-    setTimeout(() => {
-      const input = document.querySelector('.tag-add-input') as HTMLInputElement;
-      if (input) input.focus();
-    });
-  }
-
-  finishAddTag() {
-    const tag = this.newTagName?.trim();
-    if (tag && (!this.snippet.tags || !this.snippet.tags.includes(tag))) {
-      if (!this.snippet.tags) this.snippet.tags = [];
-      this.snippet.tags.push(tag);
-    }
-    this.addTagPrompt = false;
-    this.newTagName = '';
   }
 
   addAndEditTag() {
