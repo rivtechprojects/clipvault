@@ -26,6 +26,7 @@ import { FormsModule } from '@angular/forms';
 export class CollectionsListComponent {
   @Input() collections: any[] = [];
   @Input() selectedCollection: any;
+  @Input() selectedSnippet: any;
   @Output() selectCollection = new EventEmitter<any>();
   @Output() addCollection = new EventEmitter<string>();
   @Output() selectSnippet = new EventEmitter<any>();

@@ -3,36 +3,51 @@
   @if (snippet?.description) {
     <div class="snippet-description">{{ snippet?.description }}</div>
   }
-  <div class="language-select">
-    <mat-select
-      [(ngModel)]="snippet.language"
-      disableOptionCentering
-      panelClass="language-select-panel"
-      [ngModelOptions]="{standalone: true}"
-    >
-      <mat-select-trigger>
-        <span>{{ snippet.language }}</span>
-      </mat-select-trigger>
-      @for (lang of languages; track lang.value) {
-        <mat-option [value]="lang.value">
-          {{ lang.label }}
-        </mat-option>
-      }
-    </mat-select>
+  <div class="snippet-tags-label-row">
+    <ng-container *ngFor="let tag of snippet?.tags; let i = index; trackBy: trackByTag">
+      <span class="snippet-tag-label">
+        <ng-container *ngIf="editTagIndex !== i; else editTag">
+          {{ tag }}
+          <button mat-icon-button (click)="removeTag(tag)" tabindex="0" class="tag-remove-btn">
+            <mat-icon>close</mat-icon>
+          </button>
+        </ng-container>
+        <ng-template #editTag>
+          <input class="tag-add-input" [(ngModel)]="editTagValue" (keydown.enter)="$event.preventDefault(); finishEditTag(i)" (blur)="editTagIndex !== null ? finishEditTag(i) : null" autofocus />
+        </ng-template>
+      </span>
+    </ng-container>
+    <button mat-icon-button (click)="addAndEditTag()" tabindex="0" class="tag-remove-btn tag-add-btn" *ngIf="editTagIndex === null">
+      <mat-icon>add</mat-icon>
+    </button>
   </div>
+  @if (editMode) {
+    <div class="language-select">
+      <mat-select
+        [(ngModel)]="snippet.language"
+        disableOptionCentering
+        panelClass="language-select-panel"
+        [ngModelOptions]="{standalone: true}"
+      >
+        <mat-select-trigger>
+          <span>{{ snippet.language }}</span>
+        </mat-select-trigger>
+        @for (lang of languages; track lang.value) {
+          <mat-option [value]="lang.value">
+            {{ lang.label }}
+          </mat-option>
+        }
+      </mat-select>
+    </div>
+  }
   <div class="snippet-editor" [ngStyle]="{'height': '200px', 'width': '100%'}">
     <ngx-monaco-editor
       [options]="{theme: 'vs-dark', readOnly: true, minimap: {enabled: false}, language: snippet?.language || 'javascript'}"
       [model]="{ value: snippet?.code || '', language: snippet?.language || 'javascript' }"
     ></ngx-monaco-editor>
   </div>
-  <div class="snippet-tags-row">
-    @if (snippet?.tags?.length) {
-      <mat-chip-list>
-        @for (tag of snippet?.tags; track tag) {
-          <mat-chip>{{ tag }}</mat-chip>
-        }
-      </mat-chip-list>
-    }
+  <div class="snippet-language-label">
+    <mat-icon class="snippet-language-icon">code</mat-icon>
+    <span>{{ getLanguageLabel(snippet.language) }}</span>
   </div>
 </div>
