@@ -5,7 +5,7 @@ import { NgStyle, CommonModule } from '@angular/common';
 import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
-import { MatTabsModule } from '@angular/material/tabs';
+// Removed unused MatTabsModule import
 import { languageMock } from '../../../Mocks/language.mock';
 import { NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig } from 'ngx-monaco-editor';
 
