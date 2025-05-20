@@ -1,11 +1,10 @@
-import { Component, Input, Output, EventEmitter, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, Output, EventEmitter, CUSTOM_ELEMENTS_SCHEMA, ViewChild, ElementRef } from '@angular/core';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { NgStyle, CommonModule } from '@angular/common';
 import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
-// Removed unused MatTabsModule import
 import { languageMock } from '../../../Mocks/language.mock';
 import { NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig } from 'ngx-monaco-editor';
 
@@ -19,8 +18,7 @@ import { NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig } from 'ngx-monaco-edit
     MatIconModule, 
     MonacoEditorModule, 
     MatSelectModule, 
-    FormsModule,
-    MatTabsModule
+    FormsModule
   ],
   templateUrl: './snippet.html',
   styleUrls: ['./snippet.scss'],
@@ -40,9 +38,12 @@ export class Snippet {
   @Output() expand = new EventEmitter<void>();
   @Output() close = new EventEmitter<void>();
 
+  @ViewChild('tagAddInput') tagAddInput: ElementRef<HTMLInputElement> | undefined;
+
   languages = languageMock;
   editTagIndex: number | null = null;
   editTagValue = '';
+  editMode: boolean = false;
 
   onExpand() {
     this.expand.emit();
@@ -75,9 +76,10 @@ export class Snippet {
     this.editTagIndex = this.snippet.tags.length - 1;
     this.editTagValue = '';
     setTimeout(() => {
-      const input = document.querySelector('.tag-add-input') as HTMLInputElement;
-      if (input) input.value = '';
-      if (input) input.focus();
+      if (this.tagAddInput) {
+        this.tagAddInput.nativeElement.value = '';
+        this.tagAddInput.nativeElement.focus();
+      }
     });
   }
 
