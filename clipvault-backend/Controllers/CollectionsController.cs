@@ -31,7 +31,7 @@ public class CollectionsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("/api/collections")]
+    [HttpGet]
     public async Task<IActionResult> GetAllCollections()
     {
         var result = await _collectionService.GetAllCollectionsAsync();
