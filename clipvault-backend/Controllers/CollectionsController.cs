@@ -17,7 +17,7 @@ public class CollectionsController : ControllerBase
         _collectionService = collectionService;
     }
 
-    [HttpPost("/api/collections")]
+    [HttpPost]
     public async Task<IActionResult> CreateCollection([FromBody] CollectionCreateDto collectionCreateDto)
     {
         var result = await _collectionService.CreateCollectionAsync(collectionCreateDto);
