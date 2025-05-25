@@ -9,5 +9,6 @@ public interface IAppDbContext
     DbSet<SnippetTag> SnippetTags { get; }
     DbSet<Language> Languages { get; set; }
     DbSet<User> Users { get; set; }
+    DbSet<Collection> Collections { get; set; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -6,4 +6,5 @@ public class SnippetUpdateDto
     public string? Code { get; set; }
     public string? Language { get; set; }
     public List<string>? TagNames { get; set; }
+    public int? CollectionId { get; set; }
 }

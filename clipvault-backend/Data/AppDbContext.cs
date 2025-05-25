@@ -10,11 +10,21 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<SnippetTag> SnippetTags { get; set; }
     public DbSet<Language> Languages { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Collection> Collections { get; set; }
 
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Collection>()
+            .HasMany(c => c.SubCollections)
+            .WithOne(c => c.ParentCollection)
+            .HasForeignKey(c => c.ParentCollectionId);
+
+        modelBuilder.Entity<Collection>()
+            .HasMany(c => c.Snippets)
+            .WithOne(s => s.Collection)
+            .HasForeignKey(s => s.CollectionId);
         modelBuilder.Entity<SnippetTag>()
             .HasKey(st => new { st.SnippetId, st.TagId });
 

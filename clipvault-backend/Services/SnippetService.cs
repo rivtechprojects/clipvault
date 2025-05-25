@@ -37,8 +37,10 @@ public class SnippetService : ISnippetService
         // Validate and/or create tags
         var existingTags = await _tagService.ValidateAndCreateTagsAsync(snippetDto.TagNames);
 
+
         // Use the SnippetMapper to map the DTO to the Snippet entity
         var snippet = _snippetMapper.MapToSnippetEntity(snippetDto, language.Id, existingTags);
+        snippet.CollectionId = snippetDto.CollectionId;
 
         // Save the snippet to the database
         _context.Snippets.Add(snippet);
@@ -130,7 +132,7 @@ public class SnippetService : ISnippetService
         return _snippetMapper.MapToSnippetResponseDto(existingSnippet);
     }
 
-    public async Task<SnippetResponseDto> AddTagsToSnippetAsync(int snippetId, List<string> tagNames)
+    public async Task<SnippetResponseDto?> AddTagsToSnippetAsync(int snippetId, List<string> tagNames)
     {
         var snippet = await GetSnippetEntityByIdAsync(snippetId);
         if (snippet == null)
@@ -233,5 +235,4 @@ public class SnippetService : ISnippetService
         var snippets = await query.ToListAsync();
         return snippets.Select(_snippetMapper.MapToSnippetResponseDto).ToList();
     }
-
 }
