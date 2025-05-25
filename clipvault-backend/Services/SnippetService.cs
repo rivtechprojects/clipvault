@@ -37,7 +37,6 @@ public class SnippetService : ISnippetService
         // Validate and/or create tags
         var existingTags = await _tagService.ValidateAndCreateTagsAsync(snippetDto.TagNames);
 
-        var collection = await _context.Collections.FindAsync(snippetDto.CollectionId);
 
         // Use the SnippetMapper to map the DTO to the Snippet entity
         var snippet = _snippetMapper.MapToSnippetEntity(snippetDto, language.Id, existingTags);
