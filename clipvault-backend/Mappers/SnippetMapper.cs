@@ -15,7 +15,8 @@ public class SnippetMapper : ISnippetMapper
             Title = snippet.Title,
             Code = snippet.Code,
             Language = snippet.Language?.Name ?? "",
-            Tags = snippet.SnippetTags.Select(st => st.Tag?.Name ?? "").ToList() // Map to list of tag names
+            Tags = snippet.SnippetTags.Select(st => st.Tag?.Name ?? "").ToList(), // Map to list of tag names
+            CollectionId = snippet.CollectionId
         };
     }
 
@@ -27,6 +28,7 @@ public class SnippetMapper : ISnippetMapper
             Title = snippetDto.Title,
             Code = snippetDto.Code,
             LanguageId = languageId,
+            CollectionId = snippetDto.CollectionId,
             SnippetTags = tags.Select(tag => new SnippetTag
             {
                 TagId = tag.Id
@@ -41,7 +43,8 @@ public class SnippetMapper : ISnippetMapper
             Title = snippetResponse.Title,
             Code = snippetResponse.Code,
             Language = snippetResponse.Language,
-            TagNames = snippetResponse.Tags
+            TagNames = snippetResponse.Tags,
+            CollectionId = snippetResponse.CollectionId
         };
     }
 }

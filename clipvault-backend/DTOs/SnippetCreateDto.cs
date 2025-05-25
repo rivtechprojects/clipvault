@@ -18,4 +18,7 @@ public class SnippetCreateDto
     [MinLength(1, ErrorMessage = "At least one tag is required.")]
     [MaxLength(50, ErrorMessage = "Each tag cannot exceed 50 characters.")]
     public List<string> TagNames { get; set; } = new List<string>();
+    
+    [Required(ErrorMessage = "CollectionId is required.")]
+    public int CollectionId { get; set; }
 }

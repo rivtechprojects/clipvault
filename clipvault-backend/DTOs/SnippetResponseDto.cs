@@ -12,4 +12,5 @@ public class SnippetResponseDto
     [Required]
     public required string Language { get; set; }
     public List<string> Tags { get; set; } = new List<string>();
+    public int? CollectionId { get; set; }
 }

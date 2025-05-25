@@ -23,6 +23,8 @@ public static class ServiceExtensions
         services.AddScoped<ISnippetMapper, SnippetMapper>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IHashingService, SHA256HashingService>();
+        services.AddScoped<ICollectionService, CollectionService>();
+        services.AddScoped<ICollectionMapper, CollectionMapper>();
 
         // Register IPasswordHasher
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();

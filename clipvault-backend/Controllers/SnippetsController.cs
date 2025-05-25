@@ -22,7 +22,6 @@ public class SnippetsController : ControllerBase
     public async Task<IActionResult> CreateSnippet([FromBody] SnippetCreateDto snippetDto)
     {
         var response = await _snippetService.CreateSnippetAsync(snippetDto);
-
         return CreatedAtAction(nameof(GetSnippetById), new { id = response.Id }, response);
     }
 

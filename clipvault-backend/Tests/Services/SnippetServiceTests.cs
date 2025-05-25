@@ -42,6 +42,10 @@ namespace ClipVault.Tests
             var mockLanguageSet = DbSetMockHelper.CreateMockDbSet(new List<Language> { language }.AsQueryable());
             _mockDbContext.Setup(db => db.Languages).Returns(mockLanguageSet.Object);
 
+            // Mock DbSet for Collections
+            var mockCollectionSet = DbSetMockHelper.CreateMockDbSet(new List<Collection>().AsQueryable());
+            _mockDbContext.Setup(db => db.Collections).Returns(mockCollectionSet.Object);
+
             _snippetService = new SnippetService(
                 _mockDbContext.Object,
                 _mockTagService.Object,
@@ -213,9 +217,10 @@ namespace ClipVault.Tests
             var result = await _snippetService.AddTagsToSnippetAsync(3, new List<string> { "newTag" });
 
             // Assert
+            Assert.NotNull(result);
+            Assert.Contains("newTag", result.Tags);
             _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
             Assert.Single(snippets.First(s => s.Id == 3).SnippetTags);
-            Assert.Contains("newTag", result.Tags);
         }
 
         [Fact]
