@@ -1,11 +1,9 @@
 using ClipVault.Dtos;
-using ClipVault.Models;
 namespace ClipVault.Interfaces;
 
 public interface ISnippetService
 {
     Task<SnippetResponseDto> CreateSnippetAsync(SnippetCreateDto snippetDto);
-    Task<bool> DeleteSnippetAsync(int id);
     Task<List<SnippetResponseDto>> GetAllSnippetsAsync();
     Task<SnippetResponseDto?> GetSnippetByIdAsync(int id);
     Task<SnippetResponseDto?> UpdateSnippetAsync(int id, SnippetUpdateDto snippetDto);
@@ -14,5 +12,5 @@ public interface ISnippetService
     Task RemoveTagsFromSnippetAsync(int snippetId, List<string> tagNames);
     Task<SnippetResponseDto?> AddTagsToSnippetAsync(int snippetId, List<string> tagNames);
     Task<List<SnippetResponseDto>> GetSnippetsDtoByTagAsync(string tagName);
-    Task DeleteSnippetsByCollectionAsync(int collectionId);
+    Task<bool> SoftDeleteSnippetAsync(int id);
 }

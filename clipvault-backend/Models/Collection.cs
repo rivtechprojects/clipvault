@@ -8,5 +8,5 @@ public class Collection
     public int? ParentCollectionId { get; set; }
     public Collection? ParentCollection { get; set; }
     public ICollection<Collection> SubCollections { get; set; } = new List<Collection>();
-    
+    public bool IsDeleted { get; set; } = false;
 }

@@ -25,6 +25,7 @@ public static class ServiceExtensions
         services.AddScoped<IHashingService, SHA256HashingService>();
         services.AddScoped<ICollectionService, CollectionService>();
         services.AddScoped<ICollectionMapper, CollectionMapper>();
+        services.AddScoped<ITrashService, TrashService>();
 
         // Register IPasswordHasher
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();

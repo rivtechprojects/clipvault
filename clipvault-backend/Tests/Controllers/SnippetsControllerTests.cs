@@ -139,26 +139,26 @@ namespace ClipVault.Tests.Controllers
         }
 
         [Fact]
-        public async Task DeleteSnippet_ValidId_ReturnsNoContent()
+        public async Task SoftDeleteSnippet_ValidId_ReturnsNoContent()
         {
             // Arrange
-            _snippetServiceMock.Setup(s => s.DeleteSnippetAsync(1)).ReturnsAsync(true);
+            _snippetServiceMock.Setup(s => s.SoftDeleteSnippetAsync(1)).ReturnsAsync(true);
 
             // Act
-            var result = await _snippetsController.DeleteSnippet(1);
+            var result = await _snippetsController.SoftDeleteSnippet(1);
 
             // Assert
             Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public async Task DeleteSnippet_InvalidId_ThrowsNotFoundException()
+        public async Task SoftDeleteSnippet_InvalidId_ThrowsNotFoundException()
         {
             // Arrange
-            _snippetServiceMock.Setup(s => s.DeleteSnippetAsync(1)).ReturnsAsync(false);
+            _snippetServiceMock.Setup(s => s.SoftDeleteSnippetAsync(1)).ReturnsAsync(false);
 
             // Act & Assert
-            await Assert.ThrowsAsync<NotFoundException>(() => _snippetsController.DeleteSnippet(1));
+            await Assert.ThrowsAsync<NotFoundException>(() => _snippetsController.SoftDeleteSnippet(1));
         }
 
         [Fact]

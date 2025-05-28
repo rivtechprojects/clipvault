@@ -13,4 +13,5 @@ public class Snippet
     public int LanguageId { get; set; }  // foreign key referencing language table
     public Language Language { get; set; } = null!; // nav property for language 
     public List<SnippetTag> SnippetTags { get; set; } = new List<SnippetTag>(); // nav property for tags
+    public bool IsDeleted { get; set; } = false; // soft delete support
 }
