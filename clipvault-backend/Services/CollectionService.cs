@@ -76,7 +76,6 @@ public class CollectionService : ICollectionService
             }
         }
 
-        // Delegate snippet deletion to ISnippetService for SRP
         await _snippetService.DeleteSnippetsByCollectionAsync(collectionId);
 
         _context.Collections.Remove(collection);
