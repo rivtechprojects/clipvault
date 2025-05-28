@@ -78,7 +78,7 @@ public class SnippetsController : ControllerBase
         return Ok(snippets);
     }
 
-    [HttpPost("{id}/trash")]
+    [HttpDelete("{id}/trash")]
     public async Task<IActionResult> SoftDeleteSnippet(int id)
     {
         var success = await _snippetService.SoftDeleteSnippetAsync(id);

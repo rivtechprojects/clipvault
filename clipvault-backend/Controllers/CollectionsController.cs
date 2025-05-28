@@ -53,7 +53,7 @@ public class CollectionsController : ControllerBase
         return Ok(updated);
     }
 
-    [HttpPost("{id}/trash")]
+    [HttpDelete("{id}/trash")]
     public async Task<IActionResult> SoftDeleteCollection(int id)
     {
         var success = await _collectionService.SoftDeleteCollectionAsync(id);
