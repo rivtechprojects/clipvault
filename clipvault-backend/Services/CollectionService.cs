@@ -104,7 +104,7 @@ public class CollectionService : ICollectionService
     public async Task<bool> SoftDeleteCollectionAsync(int id)
     {
         var collection = await _context.Collections
-            .Include(c => c.SubCollections)
+            .Include(c => c.SubCollections.Where(sc => !sc.IsDeleted))
             .Include(c => c.Snippets)
             .FirstOrDefaultAsync(c => c.Id == id);
         if (collection == null || collection.IsDeleted)
