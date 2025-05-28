@@ -200,15 +200,12 @@ public class SnippetService : ISnippetService
         await _context.SaveChangesAsync();
     }
 
-    // Delete a snippet
-    public async Task<bool> DeleteSnippetAsync(int id)
+    public async Task<bool> SoftDeleteSnippetAsync(int id)
     {
-        var snippet = await _context.Snippets
-            .Include(s => s.SnippetTags)
-            .FirstOrDefaultAsync(s => s.Id == id)
-            ?? throw new NotFoundException($"Snippet with ID {id} not found.");
-
-        _context.Snippets.Remove(snippet);
+        var snippet = await _context.Snippets.FirstOrDefaultAsync(s => s.Id == id);
+        if (snippet == null || snippet.IsDeleted)
+            return false;
+        snippet.IsDeleted = true;
         await _context.SaveChangesAsync();
         return true;
     }
@@ -240,15 +237,5 @@ public class SnippetService : ISnippetService
 
         var snippets = await query.ToListAsync();
         return snippets.Select(_snippetMapper.MapToSnippetResponseDto).ToList();
-    }
-
-    public async Task DeleteSnippetsByCollectionAsync(int collectionId)
-    {
-        var snippets = await _context.Snippets.Where(s => s.CollectionId == collectionId).ToListAsync();
-        if (snippets.Any())
-        {
-            _context.Snippets.RemoveRange(snippets);
-            await _context.SaveChangesAsync();
-        }
     }
 }

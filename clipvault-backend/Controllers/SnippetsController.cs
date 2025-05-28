@@ -70,23 +70,20 @@ public class SnippetsController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteSnippet(int id)
-    {
-        var success = await _snippetService.DeleteSnippetAsync(id);
-        if (!success)
-        {
-            throw new NotFoundException($"Snippet with ID {id} not found.");
-        }
-
-        return NoContent();
-    }
-
     [HttpGet("search")]
     public async Task<IActionResult> SearchSnippets([FromQuery] string? keyword, [FromQuery] string? language, [FromQuery] List<string>? tagNames)
     {
         var snippets = await _snippetService.SearchSnippetsAsync(keyword, language, tagNames);
 
         return Ok(snippets);
+    }
+
+    [HttpPost("{id}/trash")]
+    public async Task<IActionResult> SoftDeleteSnippet(int id)
+    {
+        var success = await _snippetService.SoftDeleteSnippetAsync(id);
+        if (!success)
+            throw new NotFoundException($"Snippet with ID {id} not found.");
+        return NoContent();
     }
 }

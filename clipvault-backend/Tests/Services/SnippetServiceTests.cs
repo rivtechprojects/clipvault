@@ -116,20 +116,21 @@ namespace ClipVault.Tests
         }
 
         [Fact]
-        public async Task DeleteSnippetAsync_ShouldDeleteSnippet_WhenSnippetExists()
+        public async Task SoftDeleteSnippetAsync_ShouldSoftDeleteSnippet_WhenSnippetExists()
         {
             // Arrange
-            var snippetToDelete = TestDataHelper.CreateSnippetList().First(); // Use the first snippet from the list
-
-            _mockDbContext.Setup(db => db.Snippets.Remove(It.IsAny<Snippet>()));
+            var snippetToDelete = TestDataHelper.CreateSnippetList().First();
+            snippetToDelete.IsDeleted = false;
+            var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(new List<Snippet> { snippetToDelete }.AsQueryable());
+            _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
             _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             // Act
-            var result = await _snippetService.DeleteSnippetAsync(snippetToDelete.Id);
+            var result = await _snippetService.SoftDeleteSnippetAsync(snippetToDelete.Id);
 
             // Assert
             Assert.True(result);
-            _mockDbContext.Verify(db => db.Snippets.Remove(It.Is<Snippet>(s => s.Id == snippetToDelete.Id)), Times.Once);
+            Assert.True(snippetToDelete.IsDeleted);
             _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -267,50 +268,6 @@ namespace ClipVault.Tests
             {
                 Assert.Empty(result); // Ensure the result is empty if no snippets match
             }
-        }
-
-        [Fact]
-        public async Task DeleteSnippetsByCollectionAsync_RemovesSnippetsWithMatchingCollectionId()
-        {
-            // Arrange
-            int targetCollectionId = 42;
-            var snippets = new List<Snippet>
-            {
-                new Snippet { Id = 1, Title = "A", Code = "A", LanguageId = 1, Language = new Language { Id = 1, Name = "C#" }, CollectionId = targetCollectionId },
-                new Snippet { Id = 2, Title = "B", Code = "B", LanguageId = 1, Language = new Language { Id = 1, Name = "C#" }, CollectionId = targetCollectionId },
-                new Snippet { Id = 3, Title = "C", Code = "C", LanguageId = 1, Language = new Language { Id = 1, Name = "C#" }, CollectionId = 99 },
-            };
-            var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets.AsQueryable());
-            _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
-            _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-            // Act
-            await _snippetService.DeleteSnippetsByCollectionAsync(targetCollectionId);
-
-            // Assert
-            mockSnippetSet.Verify(s => s.RemoveRange(It.Is<IEnumerable<Snippet>>(ss => ss.All(sn => sn.CollectionId == targetCollectionId) && ss.Count() == 2)), Times.Once);
-            _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [Fact]
-        public async Task DeleteSnippetsByCollectionAsync_DoesNothingIfNoSnippetsFound()
-        {
-            // Arrange
-            int targetCollectionId = 123;
-            var snippets = new List<Snippet>
-            {
-                new Snippet { Id = 1, Title = "A", Code = "A", LanguageId = 1, Language = new Language { Id = 1, Name = "C#" }, CollectionId = 99 },
-            };
-            var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets.AsQueryable());
-            _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
-            _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-            // Act
-            await _snippetService.DeleteSnippetsByCollectionAsync(targetCollectionId);
-
-            // Assert
-            mockSnippetSet.Verify(s => s.RemoveRange(It.IsAny<IEnumerable<Snippet>>()), Times.Never);
-            _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }

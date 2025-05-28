@@ -1,4 +1,5 @@
 using ClipVault.Dtos;
+using ClipVault.Exceptions;
 using ClipVault.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -45,17 +46,19 @@ public class CollectionsController : ControllerBase
         return Ok(updated);
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCollection(int id)
-    {
-        await _collectionService.DeleteCollectionAsync(id);
-        return NoContent();
-    }
-
     [HttpPut("{childId}/parent")]
     public async Task<IActionResult> MoveCollection(int childId, [FromQuery] int? parentId)
     {
         var updated = await _collectionService.MoveCollectionAsync(childId, parentId);
         return Ok(updated);
+    }
+
+    [HttpPost("{id}/trash")]
+    public async Task<IActionResult> SoftDeleteCollection(int id)
+    {
+        var success = await _collectionService.SoftDeleteCollectionAsync(id);
+        if (!success)
+            throw new NotFoundException($"Collection with ID {id} not found.");
+        return NoContent();
     }
 }
