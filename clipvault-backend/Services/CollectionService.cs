@@ -90,10 +90,11 @@ public class CollectionService : ICollectionService
             throw new NotFoundException($"Collection with ID {childId} not found.");
         if (parentId.HasValue)
         {
-            var parent = await _context.Collections.FirstOrDefaultAsync(c => c.Id == parentId.Value);
+            var parentIdValue = parentId.Value;
+            var parent = await _context.Collections.FirstOrDefaultAsync(c => c.Id == parentIdValue);
             if (parent == null)
-                throw new NotFoundException($"Parent collection with ID {parentId} not found.");
-            child.ParentCollectionId = parentId.Value;
+                throw new NotFoundException($"Parent collection with ID {parentIdValue} not found.");
+            child.ParentCollectionId = parentIdValue;
         }
         else
         {
