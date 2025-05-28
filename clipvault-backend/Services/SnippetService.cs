@@ -53,11 +53,12 @@ public class SnippetService : ISnippetService
     public async Task<List<SnippetResponseDto>> GetAllSnippetsAsync()
     {
         var snippets = await _context.Snippets
-        .AsNoTracking()
-        .Include(s => s.Language)
-        .Include(s => s.SnippetTags)
-        .ThenInclude(st => st.Tag)
-        .ToListAsync();
+            .Where(s => !s.IsDeleted)
+            .AsNoTracking()
+            .Include(s => s.Language)
+            .Include(s => s.SnippetTags)
+            .ThenInclude(st => st.Tag)
+            .ToListAsync();
 
         return snippets.Select(_snippetMapper.MapToSnippetResponseDto).ToList();
     }
@@ -65,11 +66,11 @@ public class SnippetService : ISnippetService
     public async Task<SnippetResponseDto?> GetSnippetByIdAsync(int id)
     {
         var snippet = await _context.Snippets
-        .AsNoTracking()
-        .Include(s => s.Language)
-        .Include(s => s.SnippetTags)
-        .ThenInclude(st => st.Tag)
-        .FirstOrDefaultAsync(s => s.Id == id)
+            .AsNoTracking()
+            .Include(s => s.Language)
+            .Include(s => s.SnippetTags)
+            .ThenInclude(st => st.Tag)
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted)
             ?? throw new NotFoundException($"Snippet with ID {id} not found.");
 
         return _snippetMapper.MapToSnippetResponseDto(snippet);
@@ -79,6 +80,7 @@ public class SnippetService : ISnippetService
     public async Task<List<SnippetResponseDto>> GetSnippetsDtoByTagAsync(string tagName)
     {
         var snippets = await _context.Snippets
+            .Where(s => !s.IsDeleted)
             .Include(s => s.SnippetTags)
             .ThenInclude(st => st.Tag)
             .Where(s => s.SnippetTags.Any(st => st.Tag != null && st.Tag.Name == tagName))
@@ -92,7 +94,7 @@ public class SnippetService : ISnippetService
         return await _context.Snippets
             .Include(s => s.SnippetTags)
             .ThenInclude(st => st.Tag)
-            .FirstOrDefaultAsync(s => s.Id == id);
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
     }
     public async Task<SnippetResponseDto?> UpdateSnippetAsync(int id, SnippetUpdateDto snippetDto)
     {
@@ -202,8 +204,9 @@ public class SnippetService : ISnippetService
 
     public async Task<bool> SoftDeleteSnippetAsync(int id)
     {
-        var snippet = await _context.Snippets.FirstOrDefaultAsync(s => s.Id == id);
-        if (snippet == null || snippet.IsDeleted)
+        // Only soft delete if not already deleted
+        var snippet = await _context.Snippets.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+        if (snippet == null)
             return false;
         snippet.IsDeleted = true;
         await _context.SaveChangesAsync();
@@ -213,6 +216,7 @@ public class SnippetService : ISnippetService
     public async Task<List<SnippetResponseDto>> SearchSnippetsAsync(string? keyword, string? language, List<string>? tagNames)
     {
         var query = _context.Snippets
+            .Where(s => !s.IsDeleted)
             .Include(s => s.SnippetTags)
             .ThenInclude(st => st.Tag)
             .Include(s => s.Language)

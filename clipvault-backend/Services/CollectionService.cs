@@ -16,8 +16,23 @@ public class CollectionService : ICollectionService
         _collectionMapper = collectionMapper;
     }
 
+    // Helper to enforce only one level of subcollection nesting
+    private async Task CheckParentIsTopLevelAsync(int? parentCollectionId)
+    {
+        if (parentCollectionId.HasValue)
+        {
+            var parent = await _context.Collections
+                .FirstOrDefaultAsync(c => c.Id == parentCollectionId.Value);
+            if (parent == null)
+                throw new NotFoundException($"Parent collection with ID {parentCollectionId.Value} not found.");
+            if (parent.ParentCollectionId != null)
+                throw new InvalidOperationException("Cannot add a subcollection to a subcollection. Only one level of nesting is allowed.");
+        }
+    }
+
     public async Task<CollectionDto> CreateCollectionAsync(CollectionCreateDto collectionCreateDto)
     {
+        await CheckParentIsTopLevelAsync(collectionCreateDto.ParentCollectionId);
         var collection = _collectionMapper.MapToCollectionEntity(collectionCreateDto);
         _context.Collections.Add(collection);
         await _context.SaveChangesAsync();
@@ -28,7 +43,11 @@ public class CollectionService : ICollectionService
     {
         var collection = await _context.Collections
             .Where(c => !c.IsDeleted)
-            .Include(c => c.Snippets)
+            .Include(c => c.Snippets.Where(s => !s.IsDeleted))
+                .ThenInclude(s => s.Language)
+            .Include(c => c.Snippets.Where(s => !s.IsDeleted))
+                .ThenInclude(s => s.SnippetTags)
+                    .ThenInclude(st => st.Tag)
             .Include(c => c.SubCollections)
             .FirstOrDefaultAsync(c => c.Id == collectionId);
         if (collection == null)
@@ -41,7 +60,11 @@ public class CollectionService : ICollectionService
     {
         var collections = await _context.Collections
             .Where(c => c.ParentCollectionId == null && !c.IsDeleted)
-            .Include(c => c.Snippets)
+            .Include(c => c.Snippets.Where(s => !s.IsDeleted))
+                .ThenInclude(s => s.Language)
+            .Include(c => c.Snippets.Where(s => !s.IsDeleted))
+                .ThenInclude(s => s.SnippetTags)
+                    .ThenInclude(st => st.Tag)
             .Include(c => c.SubCollections)
             .ToListAsync();
         return collections.Select(_collectionMapper.MapToCollectionDto).ToList();

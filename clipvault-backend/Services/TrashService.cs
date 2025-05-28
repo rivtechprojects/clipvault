@@ -126,7 +126,11 @@ namespace ClipVault.Services
 
         public async Task<SnippetResponseDto?> RestoreSnippetAsync(int id)
         {
-            var snippet = await _context.Snippets.FirstOrDefaultAsync(s => s.Id == id && s.IsDeleted);
+            var snippet = await _context.Snippets
+                .Include(s => s.Language)
+                .Include(s => s.SnippetTags)
+                    .ThenInclude(st => st.Tag)
+                .FirstOrDefaultAsync(s => s.Id == id && s.IsDeleted);
             if (snippet == null)
                 return null;
             snippet.IsDeleted = false;
