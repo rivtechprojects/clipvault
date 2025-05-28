@@ -125,6 +125,12 @@ public class SnippetService : ISnippetService
             existingSnippet.LanguageId = language.Id;
         }
 
+        // update collectionid if provided
+        if (snippetDto.CollectionId.HasValue)
+        {
+            existingSnippet.CollectionId = snippetDto.CollectionId.Value;
+        }
+
         // Save changes to the database
         await _context.SaveChangesAsync();
 
@@ -234,5 +240,15 @@ public class SnippetService : ISnippetService
 
         var snippets = await query.ToListAsync();
         return snippets.Select(_snippetMapper.MapToSnippetResponseDto).ToList();
+    }
+
+    public async Task DeleteSnippetsByCollectionAsync(int collectionId)
+    {
+        var snippets = await _context.Snippets.Where(s => s.CollectionId == collectionId).ToListAsync();
+        if (snippets.Any())
+        {
+            _context.Snippets.RemoveRange(snippets);
+            await _context.SaveChangesAsync();
+        }
     }
 }

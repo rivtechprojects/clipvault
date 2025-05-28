@@ -51,4 +51,11 @@ public class CollectionsController : ControllerBase
         await _collectionService.DeleteCollectionAsync(id);
         return NoContent();
     }
+
+    [HttpPut("{childId}/parent")]
+    public async Task<IActionResult> MoveCollection(int childId, [FromQuery] int? parentId)
+    {
+        var updated = await _collectionService.MoveCollectionAsync(childId, parentId);
+        return Ok(updated);
+    }
 }

@@ -268,5 +268,49 @@ namespace ClipVault.Tests
                 Assert.Empty(result); // Ensure the result is empty if no snippets match
             }
         }
+
+        [Fact]
+        public async Task DeleteSnippetsByCollectionAsync_RemovesSnippetsWithMatchingCollectionId()
+        {
+            // Arrange
+            int targetCollectionId = 42;
+            var snippets = new List<Snippet>
+            {
+                new Snippet { Id = 1, Title = "A", Code = "A", LanguageId = 1, Language = new Language { Id = 1, Name = "C#" }, CollectionId = targetCollectionId },
+                new Snippet { Id = 2, Title = "B", Code = "B", LanguageId = 1, Language = new Language { Id = 1, Name = "C#" }, CollectionId = targetCollectionId },
+                new Snippet { Id = 3, Title = "C", Code = "C", LanguageId = 1, Language = new Language { Id = 1, Name = "C#" }, CollectionId = 99 },
+            };
+            var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets.AsQueryable());
+            _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
+            _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            // Act
+            await _snippetService.DeleteSnippetsByCollectionAsync(targetCollectionId);
+
+            // Assert
+            mockSnippetSet.Verify(s => s.RemoveRange(It.Is<IEnumerable<Snippet>>(ss => ss.All(sn => sn.CollectionId == targetCollectionId) && ss.Count() == 2)), Times.Once);
+            _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteSnippetsByCollectionAsync_DoesNothingIfNoSnippetsFound()
+        {
+            // Arrange
+            int targetCollectionId = 123;
+            var snippets = new List<Snippet>
+            {
+                new Snippet { Id = 1, Title = "A", Code = "A", LanguageId = 1, Language = new Language { Id = 1, Name = "C#" }, CollectionId = 99 },
+            };
+            var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets.AsQueryable());
+            _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
+            _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            // Act
+            await _snippetService.DeleteSnippetsByCollectionAsync(targetCollectionId);
+
+            // Assert
+            mockSnippetSet.Verify(s => s.RemoveRange(It.IsAny<IEnumerable<Snippet>>()), Times.Never);
+            _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
     }
 }
