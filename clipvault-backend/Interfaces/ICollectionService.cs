@@ -10,4 +10,5 @@ public interface ICollectionService
     Task<List<CollectionDto>> GetAllCollectionsAsync();
     Task<CollectionDto> UpdateCollectionAsync(int collectionId, CollectionUpdateDto updateDto);
     Task DeleteCollectionAsync(int collectionId);
+    Task<CollectionDto> MoveCollectionAsync(int childId, int? parentId);
 }
