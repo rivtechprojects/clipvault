@@ -24,7 +24,6 @@ namespace ClipVault.Tests
             var tags = MockDataFactory.CreateTags();
 
             var snippetDto = MockDataFactory.CreateSnippetCreateDto();
-            var snippetResponseDto = MockDataFactory.CreateSnippetResponseDto();
 
             _mockTagService = ServiceMockHelper.CreateMockTagService(tags, snippetDto.TagNames);
             _mockSnippetMapper = ServiceMockHelper.CreateMockSnippetMapper(snippetDto, languages.First(), tags, snippets.First());
