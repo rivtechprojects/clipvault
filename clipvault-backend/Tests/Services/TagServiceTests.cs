@@ -20,7 +20,7 @@ namespace ClipVault.Tests
         public async Task ValidateAndCreateTagsAsync_ShouldReturnExistingTags_WhenTagsExist()
         {
             // Arrange
-            var existingTags = TestDataHelper.CreateTags();
+            var existingTags = MockDataFactory.CreateTags();
             var tagNames = existingTags.Select(t => t.Name).ToList();
 
             var mockTagSet = DbSetMockHelper.CreateMockDbSet(existingTags.AsQueryable());
@@ -41,7 +41,7 @@ namespace ClipVault.Tests
         public async Task ValidateAndCreateTagsAsync_ShouldCreateNewTags_WhenTagsDoNotExist()
         {
             // Arrange
-            var existingTags = TestDataHelper.CreateTags();
+            var existingTags = MockDataFactory.CreateTags();
             var newTagNames = new List<string> { "newTag1", "newTag2" };
             var allTagNames = existingTags.Select(t => t.Name).Concat(newTagNames).ToList();
 
@@ -63,7 +63,7 @@ namespace ClipVault.Tests
         public async Task ValidateAndCreateTagsAsync_ShouldHandleMixedExistingAndNewTags()
         {
             // Arrange
-            var existingTags = TestDataHelper.CreateTags();
+            var existingTags = MockDataFactory.CreateTags();
             var newTagNames = new List<string> { "newTag1", "newTag2" };
             var mixedTagNames = existingTags.Select(t => t.Name).Concat(newTagNames).ToList();
 

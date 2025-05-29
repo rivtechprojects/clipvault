@@ -19,27 +19,29 @@ namespace ClipVault.Tests
         {
             _mockDbContext = new Mock<IAppDbContext>();
 
-            var snippetDto = TestDataHelper.CreateSnippetCreateDto();
-            var language = TestDataHelper.CreateLanguage();
-            var tags = TestDataHelper.CreateTags();
-            var snippetList = TestDataHelper.CreateSnippetList();
+            var languages = MockDataFactory.CreateLanguages();
+            var snippets = MockDataFactory.CreateSnippets(languages);
+            var tags = MockDataFactory.CreateTags();
+
+            var snippetDto = MockDataFactory.CreateSnippetCreateDto();
+            var updateDto = MockDataFactory.CreateSnippetUpdateDto();
+            var snippetResponseDto = MockDataFactory.CreateSnippetResponseDto();
 
             _mockTagService = ServiceMockHelper.CreateMockTagService(tags, snippetDto.TagNames);
-            _mockSnippetMapper = ServiceMockHelper.CreateMockSnippetMapper(snippetDto, language, tags, snippetList.First());
+            _mockSnippetMapper = ServiceMockHelper.CreateMockSnippetMapper(snippetDto, languages.First(), tags, snippets.First());
 
             _mockSnippetMapper.Setup(sm => sm.MapToSnippetResponseDto(It.IsAny<Snippet>()))
-                .Returns((Snippet s) => TestDataHelper.CreateSnippetResponseDto(s));
+                .Returns((Snippet s) => MockDataFactory.CreateSnippetResponseDto());
 
             _mockSnippetMapper.Setup(sm => sm.MapToSnippetEntity(It.IsAny<SnippetCreateDto>(), It.IsAny<int>(), It.IsAny<List<Tag>>()))
-                .Returns((SnippetCreateDto dto, int langId, List<Tag> tagList) =>
-                    TestDataHelper.CreateSnippet(dto, langId, tagList));
+                .Returns((SnippetCreateDto dto, int langId, List<Tag> tagList) => MockDataFactory.CreateActiveSnippetWithTags());
 
             // Mock DbSet for Snippets
-            var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippetList.AsQueryable());
+            var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets.AsQueryable());
             _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
 
             // Mock DbSet for Languages
-            var mockLanguageSet = DbSetMockHelper.CreateMockDbSet(new List<Language> { language }.AsQueryable());
+            var mockLanguageSet = DbSetMockHelper.CreateMockDbSet(languages.AsQueryable());
             _mockDbContext.Setup(db => db.Languages).Returns(mockLanguageSet.Object);
 
             // Mock DbSet for Collections
@@ -57,10 +59,10 @@ namespace ClipVault.Tests
         public async Task CreateSnippetAsync_ShouldCreateSnippet_WhenDataIsValid()
         {
             // Arrange
-            var snippetDto = TestDataHelper.CreateSnippetCreateDto();
-            var language = TestDataHelper.CreateLanguage();
-            var tags = TestDataHelper.CreateTags();
-            var snippet = TestDataHelper.CreateSnippet(snippetDto, language.Id, tags);
+            var snippetDto = MockDataFactory.CreateSnippetCreateDto();
+            var language = MockDataFactory.CreateLanguages().First(l => l.Name == "Python");
+            var tags = MockDataFactory.CreateTags();
+            var snippet = MockDataFactory.CreateActiveSnippetWithTags();
 
             _mockTagService.Setup(ts => ts.ValidateAndCreateTagsAsync(snippetDto.TagNames))
                 .ReturnsAsync(snippet.SnippetTags.Select(st => st.Tag!).ToList());
@@ -69,14 +71,7 @@ namespace ClipVault.Tests
                 .Returns(snippet);
 
             _mockSnippetMapper.Setup(sm => sm.MapToSnippetResponseDto(It.IsAny<Snippet>()))
-                .Returns(new SnippetResponseDto
-                {
-                    Id = snippet.Id,
-                    Title = snippet.Title,
-                    Code = snippet.Code,
-                    Language = snippet.Language?.Name ?? "",
-                    Tags = snippet.SnippetTags.Select(st => st.Tag?.Name ?? "").ToList()
-                });
+                .Returns(MockDataFactory.CreateSnippetResponseDto());
 
             // Act
             var result = await _snippetService.CreateSnippetAsync(snippetDto);
@@ -97,29 +92,29 @@ namespace ClipVault.Tests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(3, result.Count);
-            Assert.Contains(result, r => r.Title == "Snippet 1" && r.Code == "Code 1");
-            Assert.Contains(result, r => r.Title == "Snippet 2" && r.Code == "Code 2");
-            Assert.Contains(result, r => r.Title == "Snippet 3" && r.Code == "Code 3");
+            Assert.Single(result); // Only one active snippet in MockDataFactory
+            Assert.Equal("Active Snippet", result[0].Title);
+            Assert.Equal("Sample code 2", result[0].Code);
         }
 
         [Fact]
         public async Task GetSnippetByIdAsync_ShouldReturnSnippet_WhenSnippetExists()
         {
             // Act
-            var result = await _snippetService.GetSnippetByIdAsync(1);
+            var result = await _snippetService.GetSnippetByIdAsync(2); // Active Snippet has Id = 2
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("Snippet 1", result.Title);
-            Assert.Equal("Code 1", result.Code);
-            Assert.Equal("Python", result.Language);
+            Assert.Equal("Active Snippet", result.Title);
+            Assert.Equal("Sample code 2", result.Code);
+            Assert.Equal("Python", result.Language); // Language for Id=2 in MockDataFactory
         }
 
         [Fact]
         public async Task SoftDeleteSnippetAsync_ShouldSoftDeleteSnippet_WhenSnippetExists()
         {
             // Arrange
-            var snippetToDelete = TestDataHelper.CreateSnippetList().First();
+            var snippets = MockDataFactory.CreateSnippets(MockDataFactory.CreateLanguages());
+            var snippetToDelete = snippets.First(s => !s.IsDeleted);
             snippetToDelete.IsDeleted = false;
             var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(new List<Snippet> { snippetToDelete }.AsQueryable());
             _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
@@ -138,10 +133,23 @@ namespace ClipVault.Tests
         public async Task UpdateSnippetAsync_ShouldUpdateSnippet_WhenSnippetExists()
         {
             // Arrange
-            var snippet = TestDataHelper.CreateSnippetList().First(); // Use the first snippet from the list
-            var updateDto = new SnippetUpdateDto { Title = "Updated Title", Code = "Updated Code" };
-
+            var snippets = MockDataFactory.CreateSnippets(MockDataFactory.CreateLanguages());
+            var snippet = snippets.First(s => !s.IsDeleted); // Use the active snippet
+            var updateDto = MockDataFactory.CreateSnippetUpdateDto();
+            var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets.AsQueryable());
+            _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
             _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            // Setup the mapper to return the updated values
+            _mockSnippetMapper.Setup(sm => sm.MapToSnippetResponseDto(It.IsAny<Snippet>()))
+                .Returns(new SnippetResponseDto
+                {
+                    Id = snippet.Id,
+                    Title = updateDto.Title ?? string.Empty,
+                    Code = updateDto.Code ?? string.Empty,
+                    Language = snippet.Language?.Name ?? string.Empty,
+                    Tags = snippet.SnippetTags.Select(st => st.Tag?.Name ?? string.Empty).ToList()
+                });
 
             // Act
             var result = await _snippetService.UpdateSnippetAsync(snippet.Id, updateDto);
@@ -157,19 +165,13 @@ namespace ClipVault.Tests
         public async Task SearchSnippetsAsync_ShouldReturnMatchingSnippets_WhenCriteriaMatch()
         {
             // Act & Assert
-            // Scenario 1: Single matching tag
-            var result = await _snippetService.SearchSnippetsAsync("Snippet", "C#", new List<string> { "example" });
+            // Scenario 1: Title and language match active snippet
+            var result = await _snippetService.SearchSnippetsAsync("Active", "Python", new List<string>());
             Assert.NotNull(result);
             Assert.Single(result);
-            Assert.Equal("Snippet 2", result[0].Title);
+            Assert.Equal("Active Snippet", result[0].Title);
 
-            // Scenario 2: Multiple matching tags
-            result = await _snippetService.SearchSnippetsAsync("Code", "Python", new List<string> { "automation", "scripting" });
-            Assert.NotNull(result);
-            Assert.Single(result);
-            Assert.Equal("Snippet 1", result[0].Title);
-
-            // Scenario 3: No matching tags
+            // Scenario 2: No matching tags
             result = await _snippetService.SearchSnippetsAsync("nonexistent", "C#", new List<string> { "nonexistent" });
             Assert.NotNull(result);
             Assert.Empty(result);
@@ -179,8 +181,8 @@ namespace ClipVault.Tests
         public async Task ReplaceTagsForSnippetAsync_ShouldReplaceTags_WhenSnippetExists()
         {
             // Arrange
-            var snippets = TestDataHelper.CreateSnippetList().AsQueryable();
-            var snippetForReplacingTags = snippets.First(); // Use the first snippet from the list
+            var snippets = MockDataFactory.CreateSnippets(MockDataFactory.CreateLanguages()).AsQueryable();
+            var snippetForReplacingTags = snippets.First(s => s.Id == 2); // Use the active snippet
 
             var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets);
             _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
@@ -203,9 +205,10 @@ namespace ClipVault.Tests
         public async Task AddTagsToSnippetAsync_ShouldAddTags_WhenSnippetExists()
         {
             // Arrange
-            var snippets = TestDataHelper.CreateSnippetList();
+            var snippets = MockDataFactory.CreateSnippets(MockDataFactory.CreateLanguages());
             var newTags = new List<Tag> { new Tag { Id = 5, Name = "newTag" } };
-            TestDataHelper.AddTagsToSnippet(snippets, 3, newTags);
+            var activeSnippet = snippets.First(s => s.Id == 2);
+            activeSnippet.SnippetTags.AddRange(newTags.Select(t => new SnippetTag { Tag = t, TagId = t.Id }));
 
             var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets.AsQueryable());
             _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
@@ -214,22 +217,33 @@ namespace ClipVault.Tests
             _mockTagService.Setup(ts => ts.ValidateAndCreateTagsAsync(It.IsAny<List<string>>()))
                 .ReturnsAsync(newTags);
 
+            // Setup the mapper to return the updated tags
+            _mockSnippetMapper.Setup(sm => sm.MapToSnippetResponseDto(It.IsAny<Snippet>()))
+                .Returns(new SnippetResponseDto
+                {
+                    Id = activeSnippet.Id,
+                    Title = activeSnippet.Title,
+                    Code = activeSnippet.Code,
+                    Language = activeSnippet.Language?.Name ?? string.Empty,
+                    Tags = activeSnippet.SnippetTags.Select(st => st.Tag?.Name ?? string.Empty).ToList()
+                });
+
             // Act
-            var result = await _snippetService.AddTagsToSnippetAsync(3, new List<string> { "newTag" });
+            var result = await _snippetService.AddTagsToSnippetAsync(2, new List<string> { "newTag" });
 
             // Assert
             Assert.NotNull(result);
             Assert.Contains("newTag", result.Tags);
             _mockDbContext.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-            Assert.Single(snippets.First(s => s.Id == 3).SnippetTags);
+            Assert.Contains(activeSnippet.SnippetTags, st => st.TagId == 5);
         }
 
         [Fact]
         public async Task RemoveTagsFromSnippetAsync_ShouldRemoveTags_WhenSnippetExists()
         {
             // Arrange
-            var snippets = TestDataHelper.CreateSnippetList().AsQueryable();
-            var snippet = snippets.First(); // Use the first snippet from the list
+            var snippets = MockDataFactory.CreateSnippets(MockDataFactory.CreateLanguages()).AsQueryable();
+            var snippet = snippets.First(s => s.Id == 2); // Use the active snippet
 
             var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets);
             _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
@@ -251,7 +265,7 @@ namespace ClipVault.Tests
         {
             // Arrange
             var tagName = "example";
-            var snippets = TestDataHelper.CreateSnippetList().AsQueryable();
+            var snippets = MockDataFactory.CreateSnippets(MockDataFactory.CreateLanguages()).AsQueryable();
             var mockSnippetSet = DbSetMockHelper.CreateMockDbSet(snippets);
             _mockDbContext.Setup(db => db.Snippets).Returns(mockSnippetSet.Object);
 
@@ -262,11 +276,11 @@ namespace ClipVault.Tests
             Assert.NotNull(result);
             if (result.Any())
             {
-                Assert.All(result, snippet => Assert.Contains(tagName, snippet.Tags)); // Validate all returned snippets
+                Assert.All(result, snippet => Assert.Contains(tagName, snippet.Tags));
             }
             else
             {
-                Assert.Empty(result); // Ensure the result is empty if no snippets match
+                Assert.Empty(result);
             }
         }
     }

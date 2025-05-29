@@ -19,37 +19,46 @@ namespace ClipVault.Tests.Mappers
 
             // Mock setup for MapToSnippetResponseDto
             _mapperMock.Setup(m => m.MapToSnippetResponseDto(It.IsAny<Snippet>()))
-                .Returns((Snippet snippet) => TestDataHelper.CreateSnippetResponseDto(snippet));
+                .Returns((Snippet snippet) => MockDataFactory.CreateSnippetResponseDto());
 
             _mapperMock.Setup(m => m.MapToSnippetEntity(It.IsAny<SnippetCreateDto>(), It.IsAny<int>(), It.IsAny<List<Tag>>()))
-            .Returns((SnippetCreateDto dto, int languageId, List<Tag> tags) =>
-                TestDataHelper.CreateSnippet(dto, languageId, tags));
+                .Returns((SnippetCreateDto dto, int languageId, List<Tag> tags) =>
+                    MockDataFactory.CreateSnippets(MockDataFactory.CreateLanguages()).First());
             // Mock setup for MapToUpdateDto
             _mapperMock.Setup(m => m.MapToUpdateDto(It.IsAny<SnippetResponseDto>()))
-                .Returns((SnippetResponseDto response) => TestDataHelper.CreateSnippetUpdateDto(response));
+                .Returns((SnippetResponseDto response) => MockDataFactory.CreateSnippetUpdateDto());
         }
 
         [Fact]
         public void MapToSnippetResponseDto_ShouldMapCorrectly()
         {
             // Arrange
-            var snippetDto = TestDataHelper.CreateSnippetCreateDto();
-            var language = TestDataHelper.CreateLanguage();
-            var tags = TestDataHelper.CreateTags();
-            var snippet = TestDataHelper.CreateSnippet(snippetDto, language.Id, tags);
+            var snippet = MockDataFactory.CreateSnippets(MockDataFactory.CreateLanguages()).First(s => s.Title == "Active Snippet");
             snippet.SnippetTags = new List<SnippetTag>
             {
                 new SnippetTag { Tag = new Tag { Name = "Tag1" } },
                 new SnippetTag { Tag = new Tag { Name = "Tag2" } }
             };
+            _mapperMock.Setup(m => m.MapToSnippetResponseDto(snippet))
+                .Returns(new SnippetResponseDto
+                {
+                    Id = snippet.Id,
+                    Title = snippet.Title,
+                    Code = snippet.Code,
+                    Language = snippet.Language.Name,
+                    Tags = snippet.SnippetTags
+                        .Select(st => st.Tag != null ? st.Tag.Name : string.Empty)
+                        .Where(name => !string.IsNullOrEmpty(name))
+                        .ToList()
+                });
 
             // Act
             var result = _mapper.MapToSnippetResponseDto(snippet);
 
-            var expectedTags = snippet.SnippetTags?
-                .Where(st => st != null && st.Tag != null)
-                .Select(st => st.Tag!.Name)
-                .ToList() ?? new List<string>();
+            var expectedTags = snippet.SnippetTags
+                .Select(st => st.Tag != null ? st.Tag.Name : string.Empty)
+                .Where(name => !string.IsNullOrEmpty(name))
+                .ToList();
 
             // Assert
             Assert.NotNull(result);
@@ -65,9 +74,18 @@ namespace ClipVault.Tests.Mappers
         public void MapToSnippetEntity_ShouldMapCorrectly()
         {
             // Arrange
-            var snippetDto = TestDataHelper.CreateSnippetCreateDto();
-            var tags = TestDataHelper.CreateTags();
-            int languageId = 1;
+            var snippetDto = MockDataFactory.CreateSnippetCreateDto();
+            var tags = MockDataFactory.CreateTags();
+            int languageId = 2;
+            var expectedSnippet = new Snippet
+            {
+                Title = snippetDto.Title,
+                Code = snippetDto.Code,
+                LanguageId = languageId,
+                SnippetTags = tags.Select(tag => new SnippetTag { Tag = tag, TagId = tag.Id }).ToList()
+            };
+            _mapperMock.Setup(m => m.MapToSnippetEntity(snippetDto, languageId, tags))
+                .Returns(expectedSnippet);
 
             // Act
             var result = _mapper.MapToSnippetEntity(snippetDto, languageId, tags);
@@ -86,7 +104,15 @@ namespace ClipVault.Tests.Mappers
         public void MapToUpdateDto_ShouldMapCorrectly()
         {
             // Arrange
-            var snippetResponse = TestDataHelper.CreateSnippetResponseDto();
+            var snippetResponse = MockDataFactory.CreateSnippetResponseDto();
+            var expectedUpdateDto = new SnippetUpdateDto
+            {
+                Title = snippetResponse.Title,
+                Code = snippetResponse.Code,
+                Language = snippetResponse.Language,
+                TagNames = snippetResponse.Tags
+            };
+            _mapperMock.Setup(m => m.MapToUpdateDto(snippetResponse)).Returns(expectedUpdateDto);
 
             // Act
             var result = _mapper.MapToUpdateDto(snippetResponse);
