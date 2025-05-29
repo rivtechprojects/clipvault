@@ -58,8 +58,6 @@ namespace ClipVault.Tests
         {
             // Arrange
             var snippetDto = MockDataFactory.CreateSnippetCreateDto();
-            var language = MockDataFactory.CreateLanguages().First(l => l.Name == "Python");
-            var tags = MockDataFactory.CreateTags();
             var snippet = MockDataFactory.CreateActiveSnippetWithTags();
 
             _mockTagService.Setup(ts => ts.ValidateAndCreateTagsAsync(snippetDto.TagNames))
