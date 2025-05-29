@@ -114,6 +114,16 @@ namespace ClipVault.Tests.Mocks
             };
         }
 
+        public static List<SnippetResponseDto> CreateSnippetResponseDtoList(int count = 1)
+        {
+            var list = new List<SnippetResponseDto>();
+            for (int i = 0; i < count; i++)
+            {
+                list.Add(CreateSnippetResponseDto());
+            }
+            return list;
+        }
+
         public static Snippet CreateActiveSnippetWithTags()
         {
             var language = CreateLanguages().First(l => l.Name == "Python");
@@ -165,6 +175,23 @@ namespace ClipVault.Tests.Mocks
             {
                 RefreshToken = token
             };
+        }
+
+        public static CollectionDto CreateActiveCollectionDto()
+        {
+            return new CollectionDto
+            {
+                Id = 2,
+                Name = "Active Collection",
+                ParentCollectionId = null,
+                SubCollections = new List<CollectionDto>(),
+                Snippets = new List<SnippetResponseDto>()
+            };
+        }
+
+        public static List<CollectionDto> CreateCollectionDtoList()
+        {
+            return new List<CollectionDto> { CreateActiveCollectionDto() };
         }
     }
 }

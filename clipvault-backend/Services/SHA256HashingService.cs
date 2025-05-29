@@ -1,7 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
+using ClipVault.Interfaces;
 
-namespace ClipVault.Utils;
+namespace ClipVault.Services;
 
 public class SHA256HashingService : IHashingService
 {

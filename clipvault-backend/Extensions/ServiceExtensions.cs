@@ -3,7 +3,6 @@ using ClipVault.Services;
 using Microsoft.AspNetCore.Identity;
 using ClipVault.Models;
 using ClipVault.Mappers;
-using ClipVault.Utils;
 
 namespace ClipVault.Extensions;
 
