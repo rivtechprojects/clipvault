@@ -24,8 +24,8 @@ namespace ClipVault.Tests.Controllers
         public async Task CreateSnippet_ValidRequest_ReturnsCreatedAtAction()
         {
             // Arrange
-            var snippetDto = TestDataHelper.CreateSnippetCreateDto();
-            var snippetResponse = TestDataHelper.CreateSnippetResponseDto();
+            var snippetDto = MockDataFactory.CreateSnippetCreateDto();
+            var snippetResponse = MockDataFactory.CreateSnippetResponseDto();
 
             _snippetServiceMock.Setup(s => s.CreateSnippetAsync(snippetDto)).ReturnsAsync(snippetResponse);
 
@@ -42,7 +42,7 @@ namespace ClipVault.Tests.Controllers
         public async Task GetAllSnippets_ReturnsOkWithSnippets()
         {
             // Arrange
-            var snippets = new List<SnippetResponseDto> { TestDataHelper.CreateSnippetResponseDto() };
+            var snippets = new List<SnippetResponseDto> { MockDataFactory.CreateSnippetResponseDto() };
             _snippetServiceMock.Setup(s => s.GetAllSnippetsAsync()).ReturnsAsync(snippets);
 
             // Act
@@ -57,7 +57,7 @@ namespace ClipVault.Tests.Controllers
         public async Task GetSnippetById_ValidId_ReturnsOkWithSnippet()
         {
             // Arrange
-            var snippet = TestDataHelper.CreateSnippetResponseDto();
+            var snippet = MockDataFactory.CreateSnippetResponseDto();
             _snippetServiceMock.Setup(s => s.GetSnippetByIdAsync(1)).ReturnsAsync(snippet);
 
             // Act
@@ -99,7 +99,7 @@ namespace ClipVault.Tests.Controllers
         {
             // Arrange
             var tagNames = new List<string> { "tag1", "tag2" };
-            var updatedSnippet = TestDataHelper.CreateSnippetResponseDto();
+            var updatedSnippet = MockDataFactory.CreateSnippetResponseDto();
             _snippetServiceMock.Setup(s => s.AddTagsToSnippetAsync(1, tagNames)).ReturnsAsync(updatedSnippet);
 
             // Act
@@ -165,7 +165,7 @@ namespace ClipVault.Tests.Controllers
         public async Task SearchSnippets_ReturnsOkWithSnippets()
         {
             // Arrange
-            var snippets = new List<SnippetResponseDto> { TestDataHelper.CreateSnippetResponseDto() };
+            var snippets = new List<SnippetResponseDto> { MockDataFactory.CreateSnippetResponseDto() };
             _snippetServiceMock.Setup(s => s.SearchSnippetsAsync("keyword", "language", It.IsAny<List<string>>())).ReturnsAsync(snippets);
 
             // Act

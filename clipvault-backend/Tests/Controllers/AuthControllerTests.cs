@@ -26,8 +26,8 @@ namespace ClipVault.Tests
         public async Task RegisterUser_ValidRequest_ReturnsOk()
         {
             // Arrange
-            var registerDto = TestDataHelper.CreateRegisterDto();
-            var user = TestDataHelper.CreateUser(registerDto);
+            var registerDto = MockDataFactory.CreateRegisterDto();
+            var user = MockDataFactory.CreateUser();
             _authServiceMock.Setup(s => s.RegisterUserAsync(registerDto.UserName, registerDto.Email, registerDto.Password)).ReturnsAsync(user);
 
             // Act
@@ -52,7 +52,7 @@ namespace ClipVault.Tests
         public async Task LoginUser_ValidCredentials_ReturnsTokens()
         {
             // Arrange
-            var loginDto = TestDataHelper.CreateLoginDto();
+            var loginDto = MockDataFactory.CreateLoginDto();
             var accessToken = "mocked-access-token";
             var refreshToken = "mocked-refresh-token";
             _authServiceMock.Setup(s => s.LoginUserWithRefreshTokenAsync(loginDto.UserNameOrEmail, loginDto.Password))
@@ -86,7 +86,7 @@ namespace ClipVault.Tests
         {
             // Arrange
             var refreshTokenDto = new RefreshTokenDto { RefreshToken = "valid-refresh-token" };
-            var user = TestDataHelper.CreateUser();
+            var user = MockDataFactory.CreateUser();
             var newAccessToken = "new-access-token";
             var newRefreshToken = "new-refresh-token";
 
@@ -132,13 +132,8 @@ namespace ClipVault.Tests
         {
             // Arrange
             var userId = 1;
-            var user = new User
-            {
-                UserId = userId,
-                UserName = "testuser",
-                Email = "testuser@example.com",
-                PasswordHash = "hashedpassword"
-            };
+            var user = MockDataFactory.CreateUser();
+            user.UserId = userId;
 
             _authServiceMock.Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync(user);
             _authServiceMock.Setup(s => s.LogoutUserAsync(user)).Returns(Task.CompletedTask);

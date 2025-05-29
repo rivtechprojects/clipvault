@@ -6,8 +6,6 @@ using ClipVault.Interfaces;
 using ClipVault.Models;
 using ClipVault.Exceptions;
 using ClipVault.Tests.Mocks;
-using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
 using ClipVault.Utils;
 
 namespace ClipVault.Tests
@@ -39,7 +37,7 @@ namespace ClipVault.Tests
         public async Task RegisterUserAsync_ShouldThrowException_WhenUsernameOrEmailExists()
         {
             // Arrange
-            var existingUser = TestDataHelper.CreateUser();
+            var existingUser = MockDataFactory.CreateUser();
             var mockUserSet = DbSetMockHelper.CreateMockDbSet(new List<User> { existingUser }.AsQueryable());
             _mockDbContext.Setup(db => db.Users).Returns(mockUserSet.Object);
 
@@ -54,7 +52,7 @@ namespace ClipVault.Tests
             var mockUserSet = DbSetMockHelper.CreateMockDbSet(new List<User>().AsQueryable());
             _mockDbContext.Setup(db => db.Users).Returns(mockUserSet.Object);
 
-            var newUser = TestDataHelper.CreateUser();
+            var newUser = MockDataFactory.CreateUser();
             _mockPasswordHasher.Setup(ph => ph.HashPassword(It.IsAny<User>(), It.IsAny<string>())).Returns("hashedpassword");
 
             _mockDbContext.Setup(db => db.Users.Add(It.IsAny<User>()));
@@ -71,7 +69,7 @@ namespace ClipVault.Tests
         public async Task LogoutUserAsync_ShouldRevokeRefreshToken()
         {
             // Arrange
-            var user = TestDataHelper.CreateUser();
+            var user = MockDataFactory.CreateUser();
             _mockDbContext.Setup(db => db.Users.Update(user));
             _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -87,7 +85,7 @@ namespace ClipVault.Tests
         public async Task RevokeRefreshTokenAsync_ShouldClearRefreshTokenFields()
         {
             // Arrange
-            var user = TestDataHelper.CreateUser();
+            var user = MockDataFactory.CreateUser();
             _mockDbContext.Setup(db => db.Users.Update(user));
             _mockDbContext.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -103,7 +101,7 @@ namespace ClipVault.Tests
         public async Task ChangePasswordAsync_ShouldUpdatePasswordAndRevokeRefreshToken()
         {
             // Arrange
-            var user = TestDataHelper.CreateUser();
+            var user = MockDataFactory.CreateUser();
             var newPassword = "newpassword123";
             _mockPasswordHasher.Setup(ph => ph.HashPassword(user, newPassword)).Returns("newhashedpassword");
             _mockDbContext.Setup(db => db.Users.Update(user));
@@ -122,7 +120,7 @@ namespace ClipVault.Tests
         public async Task LoginUserAsync_ShouldReturnJwtToken_WhenCredentialsAreValid()
         {
             // Arrange
-            var user = TestDataHelper.CreateUser();
+            var user = MockDataFactory.CreateUser();
             var mockUserSet = DbSetMockHelper.CreateMockDbSet(new List<User> { user }.AsQueryable());
             _mockDbContext.Setup(db => db.Users).Returns(mockUserSet.Object);
 
@@ -130,7 +128,7 @@ namespace ClipVault.Tests
                 .Returns(PasswordVerificationResult.Success);
 
             // Mock Jwt configuration
-            _mockConfiguration.Setup(config => config.GetSection("Jwt")["Key"]).Returns("c3VwZXJzZWNyZXRrZXJrZXkyNTZiaXRzMTIzNDU2Nzg5MA=="); // Base64 for "supersecretkey256bits1234567890"
+            _mockConfiguration.Setup(config => config.GetSection("Jwt")["Key"]).Returns("c3VwZXJzZWNyZXRrZXkrZXkyNTZiaXRzMTIzNDU2Nzg5MA==");
             _mockConfiguration.Setup(config => config.GetSection("Jwt")["Issuer"]).Returns("testIssuer");
             _mockConfiguration.Setup(config => config.GetSection("Jwt")["Audience"]).Returns("testAudience");
             _mockConfiguration.Setup(config => config.GetSection("Jwt")["TokenExpirationMinutes"]).Returns("60");
@@ -146,7 +144,7 @@ namespace ClipVault.Tests
         public async Task LoginUserWithRefreshTokenAsync_ShouldReturnTokens_WhenCredentialsAreValid()
         {
             // Arrange
-            var user = TestDataHelper.CreateUser();
+            var user = MockDataFactory.CreateUser();
             var mockUserSet = DbSetMockHelper.CreateMockDbSet(new List<User> { user }.AsQueryable());
             _mockDbContext.Setup(db => db.Users).Returns(mockUserSet.Object);
 
@@ -154,7 +152,7 @@ namespace ClipVault.Tests
                 .Returns(PasswordVerificationResult.Success);
 
             // Mock Jwt configuration
-            _mockConfiguration.Setup(config => config.GetSection("Jwt")["Key"]).Returns("c3VwZXJzZWNyZXRrZXJrZXkyNTZiaXRzMTIzNDU2Nzg5MA=="); // Base64 for "supersecretkey256bits1234567890"
+            _mockConfiguration.Setup(config => config.GetSection("Jwt")["Key"]).Returns("c3VwZXJzZWNyZXRrZXkrZXkyNTZiaXRzMTIzNDU2Nzg5MA==");
             _mockConfiguration.Setup(config => config.GetSection("Jwt")["Issuer"]).Returns("testIssuer");
             _mockConfiguration.Setup(config => config.GetSection("Jwt")["Audience"]).Returns("testAudience");
             _mockConfiguration.Setup(config => config.GetSection("Jwt")["TokenExpirationMinutes"]).Returns("60");
@@ -171,7 +169,7 @@ namespace ClipVault.Tests
         public async Task GetUserByRefreshTokenAsync_ShouldReturnUser_WhenTokenIsValid()
         {
             // Arrange
-            var user = TestDataHelper.CreateUser();
+            var user = MockDataFactory.CreateUser();
             var hashedToken = "hashedToken";
             user.RefreshToken = hashedToken;
 
@@ -192,7 +190,7 @@ namespace ClipVault.Tests
         public async Task UpdateRefreshTokenAsync_ShouldUpdateUserRefreshToken()
         {
             // Arrange
-            var user = TestDataHelper.CreateUser();
+            var user = MockDataFactory.CreateUser();
             var refreshToken = "newRefreshToken";
 
             // Mock hashing service
@@ -214,8 +212,8 @@ namespace ClipVault.Tests
         public void GenerateJwtToken_ShouldReturnToken_WhenUserIsValid()
         {
             // Arrange
-            var user = TestDataHelper.CreateUser();
-            _mockConfiguration.Setup(config => config.GetSection("Jwt")["Key"]).Returns("c3VwZXJzZWNyZXRrZXkyNTZiaXRzMTIzNDU2Nzg5MTIzNDU2Nzg5MA=="); // Base64 for "supersecretkey256bits12345678901234567890"
+            var user = MockDataFactory.CreateUser();
+            _mockConfiguration.Setup(config => config.GetSection("Jwt")["Key"]).Returns("c3VwZXJzZWNyZXRrZXkyNTZiaXRzMTIzNDU2Nzg5MTIzNDU2Nzg5MA==");
             _mockConfiguration.Setup(config => config.GetSection("Jwt")["Issuer"]).Returns("testIssuer");
             _mockConfiguration.Setup(config => config.GetSection("Jwt")["Audience"]).Returns("testAudience");
             _mockConfiguration.Setup(config => config.GetSection("Jwt")["TokenExpirationMinutes"]).Returns("60");

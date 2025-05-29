@@ -2,7 +2,6 @@ using ClipVault.Dtos;
 using ClipVault.Interfaces;
 using ClipVault.Models;
 using Moq;
-using System.Collections.Generic;
 
 namespace ClipVault.Tests.Mocks
 {
