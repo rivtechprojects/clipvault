@@ -54,7 +54,7 @@ namespace ClipVault.Tests.Controllers
         public async Task RestoreCollection_InvalidId_ThrowsNotFoundException()
         {
             // Arrange
-            _trashServiceMock.Setup(s => s.RestoreCollectionAsync(99)).ReturnsAsync(null);
+            _trashServiceMock.Setup(s => s.RestoreCollectionAsync(99)).ReturnsAsync((CollectionDto?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(() => _controller.RestoreCollection(99));
