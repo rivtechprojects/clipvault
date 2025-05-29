@@ -43,7 +43,7 @@ export class CollectionsListComponent {
     this.newCollectionName = '';
   }
 
-  onSelectSnippet(snippet: any) {
+  onSelectSnippet(snippet: Snippet) {
     this.selectedSnippet = snippet;
     this.selectSnippet.emit(snippet);
   }
