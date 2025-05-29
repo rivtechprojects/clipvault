@@ -114,7 +114,7 @@ public class CollectionService : ICollectionService
         return true;
     }
 
-    private async Task SoftDeleteCollectionRecursive(Collection collection)
+    private static async Task SoftDeleteCollectionRecursive(Collection collection)
     {
         collection.IsDeleted = true;
         if (collection.Snippets != null)

@@ -1,4 +1,4 @@
-namespace ClipVault.Utils;
+namespace ClipVault.Interfaces;
 
 public interface IHashingService
 {
