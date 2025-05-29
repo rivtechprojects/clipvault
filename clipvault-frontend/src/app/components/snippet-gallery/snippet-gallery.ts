@@ -1,22 +1,23 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, Signal } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
-import { Snippet } from '../snippet/snippet';
-import { snippetCollectionsMock } from '../../../Mocks/snippet.mock';
+import { CollectionsService } from '../../services/collections.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CollectionsListComponent } from '../collections-list/collections-list.component';
+import { CodeEditor } from '../code-editor/code-editor';
+import { Collection, Snippet } from '../../models/models';
 
 @Component({
   selector: 'app-snippet-gallery',
   standalone: true,
   imports: [
     CommonModule,
-    Snippet,
+    CodeEditor,
     CollectionsListComponent,
     MatToolbarModule,
     MatListModule,
@@ -31,28 +32,51 @@ import { CollectionsListComponent } from '../collections-list/collections-list.c
   templateUrl: './snippet-gallery.html',
   styleUrl: './snippet-gallery.scss'
 })
-export class SnippetGallery {
-  collections = snippetCollectionsMock;
-  selectedCollection = this.collections[0];
-  selectedSnippet: any = this.selectedCollection.snippets[0];
+export class SnippetGallery implements OnInit {
+  collectionsSignal: Signal<Collection[]>;
+  selectedCollection: Collection | null = null;
+  selectedSnippet: Snippet | null = null;
 
-  onSelectCollection(collection: any) {
+  constructor(private collectionsService: CollectionsService) {
+    this.collectionsSignal = this.collectionsService.collections;
+    this.selectedSnippet = null;
+  }
+
+  ngOnInit() {
+    this.collectionsService.fetchCollections();
+    const collections = this.collectionsSignal();
+    if (collections && collections.length > 0) {
+      this.selectedCollection = collections[0];
+      if (collections[0].snippets && collections[0].snippets.length > 0) {
+        this.selectedSnippet = collections[0].snippets[0];
+      } else {
+        this.selectedSnippet = null;
+      }
+    }
+  }
+
+  onSelectCollection(collection: Collection) {
     this.selectedCollection = collection;
-    // Defensive: If the collection has snippets, select the first; otherwise, set to an empty object
     if (collection && Array.isArray(collection.snippets) && collection.snippets.length > 0) {
       this.selectedSnippet = collection.snippets[0];
     } else {
-      this.selectedSnippet = {};
+      this.selectedSnippet = null;
     }
   }
 
   onAddCollection(name: string) {
     if (!name || !name.trim()) return;
-    this.collections.push({ name: name.trim(), snippets: [] });
+    this.collectionsService.addCollection({
+      id: Date.now(),
+      name: name.trim(),
+      snippets: [],
+      parentCollectionId: null,
+      subCollections: [],
+      isDeleted: false
+    });
   }
 
-  selectSnippet(snippet: any) {
-    // Only set selectedSnippet if the object has a title and code (i.e., is a snippet, not a collection)
+  selectSnippet(snippet: Snippet) {
     if (snippet && snippet.title && snippet.code !== undefined) {
       this.selectedSnippet = snippet;
     }

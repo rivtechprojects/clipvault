@@ -2,7 +2,7 @@
   <aside class="sidebar left mat-elevation-z2">
     <mat-toolbar color="primary">Collections</mat-toolbar>
     <app-collections-list
-      [collections]="collections"
+      [collections]="collectionsSignal()"
       [selectedCollection]="selectedCollection"
       (selectCollection)="onSelectCollection($event)"
       (addCollection)="onAddCollection($event)"
@@ -11,7 +11,7 @@
   </aside>
   <main class="gallery-panel mat-elevation-z2">
     @if (selectedSnippet && selectedSnippet.title) {
-      <app-snippet [snippet]="selectedSnippet"></app-snippet>
+      <app-code-editor [snippet]="selectedSnippet"></app-code-editor>
     }
     @else {
       <div class="empty-state">Select a snippet to view it here.</div>

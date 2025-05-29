@@ -7,9 +7,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { languageMock } from '../../../Mocks/language.mock';
 import { NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig } from 'ngx-monaco-editor';
+import { Snippet } from '../../models/models';
 
 @Component({
-  selector: 'app-snippet',
+  selector: 'app-code-editor',
   standalone: true,
   imports: [
     CommonModule, 
@@ -20,8 +21,8 @@ import { NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig } from 'ngx-monaco-edit
     MatSelectModule, 
     FormsModule
   ],
-  templateUrl: './snippet.html',
-  styleUrls: ['./snippet.scss'],
+  templateUrl: './code-editor.html',
+  styleUrls: ['./code-editor.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [
     {
@@ -32,8 +33,8 @@ import { NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig } from 'ngx-monaco-edit
     }
   ]
 })
-export class Snippet {
-  @Input() snippet: any;
+export class CodeEditor {
+  @Input() snippet: Snippet | null = null;
   @Input() expanded = false;
   @Output() expand = new EventEmitter<void>();
   @Output() close = new EventEmitter<void>();
@@ -60,14 +61,17 @@ export class Snippet {
     return lang ? lang.label : langValue;
   }
 
-  removeTag(tag: string) {
-    if (!this.snippet?.tags) return;
-    this.snippet.tags = this.snippet.tags.filter((t: string) => t !== tag);
+  getLanguageValue(lang: string): string {
+    return lang;
   }
 
-// Removed the unused addTagIfValid method.
+  removeTag(tag: string) {
+    if (!this.snippet || !this.snippet.tags) return;
+    this.snippet.tags = this.snippet.tags.filter((t) => t !== tag);
+  }
 
   addAndEditTag() {
+    if (!this.snippet) return;
     if (!this.snippet.tags) this.snippet.tags = [];
     this.snippet.tags.push('');
     this.editTagIndex = this.snippet.tags.length - 1;
@@ -81,8 +85,9 @@ export class Snippet {
   }
 
   finishEditTag(index: number) {
+    if (!this.snippet || !this.snippet.tags) return;
     const value = this.editTagValue.trim();
-    if (value && this.snippet.tags.filter((t: string, i: number) => t === value && i !== index).length === 0) {
+    if (value && this.snippet.tags.filter((t, i) => t === value && i !== index).length === 0) {
       this.snippet.tags[index] = value;
     } else {
       this.snippet.tags.splice(index, 1);

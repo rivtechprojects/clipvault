@@ -1,24 +1,38 @@
 <mat-nav-list class="collections-tree">
   @for (collection of collections; track collection) {
-    <div>
-      <mat-list-item (click)="collection.expanded = !collection.expanded" [class.selected]="collection === selectedCollection">
-        <mat-icon class="expand-icon">{{ collection.expanded ? 'expand_more' : 'chevron_right' }}</mat-icon>
-        <mat-icon class="folder-icon">folder</mat-icon>
-        <span class="collection-name"><strong>{{ collection.name }}</strong></span>
-      </mat-list-item>
-      @if (collection.expanded && collection.snippets && collection.snippets.length > 0) {
-        <div class="sub-items" style="padding-left: 24px;">
-          @for (snippet of collection.snippets; track snippet) {
-            <mat-list-item (click)="selectSnippet.emit(snippet); $event.stopPropagation();" [class.selected]="snippet === selectedSnippet">
-              <mat-icon class="snippet-icon">description</mat-icon>
-              {{ snippet.title }}
-            </mat-list-item>
-          }
-        </div>
-      }
-    </div>
+    <ng-container *ngTemplateOutlet="collectionTemplate; context: { $implicit: collection, level: 0 }"></ng-container>
   }
 </mat-nav-list>
+
+<ng-template #collectionTemplate let-collection let-level="level">
+  <div style="display: flex; flex-direction: column;">
+    <mat-list-item style="display: flex; flex-direction: row; align-items: center; padding: 0; min-height: 0; cursor: pointer;" (click)="collection.expanded = !collection.expanded" [class.selected]="collection === selectedCollection">
+      <span style="display: inline-flex; align-items: center; margin-right: 4px; min-width: 0;">
+        @if (hasSubCollections(collection) || (collection.snippets && collection.snippets.length > 0)) {
+          <mat-icon style="font-size: 20px; vertical-align: middle;">{{ collection.expanded ? 'expand_more' : 'chevron_right' }}</mat-icon>
+        }
+      </span>
+      <mat-icon style="margin-right: 8px;" [style.paddingLeft.px]="level * 16">folder</mat-icon>
+      <span style="vertical-align: middle;"><strong>{{ collection.name }}</strong></span>
+    </mat-list-item>
+    @if (collection.expanded && collection.snippets && collection.snippets.length > 0) {
+      <div [style.paddingLeft.px]="(level + 1) * 16">
+        @for (snippet of collection.snippets; track snippet) {
+          <mat-list-item style="display: flex; align-items: center; min-height: 0; cursor: pointer;" (click)="onSelectSnippet(snippet); $event.stopPropagation();" [class.selected]="snippet === selectedSnippet">
+            <mat-icon style="margin-right: 8px;">description</mat-icon>
+            {{ snippet.title }}
+          </mat-list-item>
+        }
+      </div>
+    }
+    @if (collection.expanded && hasSubCollections(collection)) {
+      @for (sub of collection.subCollections; track sub) {
+        <ng-container *ngTemplateOutlet="collectionTemplate; context: { $implicit: sub, level: level + 1 }"></ng-container>
+      }
+    }
+  </div>
+</ng-template>
+
 <button mat-stroked-button style="margin: 8px 0; width: 100%;" (click)="addCollectionPrompt = true">+ New Collection</button>
 @if (addCollectionPrompt) {
   <div class="add-collection-form">
