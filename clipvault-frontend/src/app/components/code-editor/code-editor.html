@@ -1,10 +1,9 @@
-<div class="snippet-card" [class.expanded]="expanded">
-  <div class="snippet-title">{{ snippet?.title }}</div>
-  @if (snippet?.description) {
-    <div class="snippet-description">{{ snippet?.description }}</div>
-  }
-  <div class="snippet-tags-label-row">
-    <ng-container *ngFor="let tag of snippet?.tags; let i = index; trackBy: trackByTag">
+<div class="snippet-card" [class.expanded]="expanded" *ngIf="snippet">
+  <div class="snippet-title">{{ snippet.title }}</div>
+  @if (snippet.description) {
+    <div class="snippet-description">{{ snippet.description }}</div>
+  }  <div class="snippet-tags-label-row">
+    @for (tag of snippet.tags; track tag; let i = $index) {
       <span class="snippet-tag-label">
         <ng-container *ngIf="editTagIndex !== i; else editTag">
           {{ tag }}
@@ -16,7 +15,7 @@
           <input class="tag-add-input" [(ngModel)]="editTagValue" (keydown.enter)="$event.preventDefault(); finishEditTag(i)" (blur)="editTagIndex !== null ? finishEditTag(i) : null" autofocus />
         </ng-template>
       </span>
-    </ng-container>
+    }
     <button mat-icon-button (click)="addAndEditTag()" tabindex="0" class="tag-remove-btn tag-add-btn" *ngIf="editTagIndex === null">
       <mat-icon>add</mat-icon>
     </button>
@@ -42,8 +41,8 @@
   }
   <div class="snippet-editor" [ngStyle]="{'height': '200px', 'width': '100%'}">
     <ngx-monaco-editor
-      [options]="{theme: 'vs-dark', readOnly: true, minimap: {enabled: false}, language: snippet?.language || 'javascript'}"
-      [model]="{ value: snippet?.code || '', language: snippet?.language || 'javascript' }"
+      [options]="{theme: 'vs-dark', readOnly: true, minimap: {enabled: false}, language: getLanguageValue(snippet.language) || 'javascript'}"
+      [model]="{ value: snippet.code || '', language: getLanguageValue(snippet.language) || 'javascript' }"
     ></ngx-monaco-editor>
   </div>
   <div class="snippet-language-label">
