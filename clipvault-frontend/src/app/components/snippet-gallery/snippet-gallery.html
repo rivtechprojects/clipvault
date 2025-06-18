@@ -1,15 +1,26 @@
-<div class="snippet-gallery-layout mat-app-background mat-typography">
-  <aside class="sidebar left mat-elevation-z2">
+<div class="snippet-gallery-layout mat-app-background mat-typography">  <aside class="sidebar left mat-elevation-z2">
     <mat-toolbar color="primary">Collections</mat-toolbar>
-    <app-collections-list
-      [collections]="collectionsSignal()"
-      [selectedCollection]="selectedCollection"
-      (selectCollection)="onSelectCollection($event)"
-      (addCollection)="onAddCollection($event)"
-      (selectSnippet)="selectSnippet($event)">
-    </app-collections-list>
-  </aside>
-  <main class="gallery-panel mat-elevation-z2">
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="loading-spinner">Loading collections...</div>
+      </div>
+    }
+    @else if (errorMessage) {
+      <div class="error-state">
+        <p>{{ errorMessage }}</p>
+        <button mat-button (click)="onRetryLoad()">Retry</button>
+      </div>
+    }
+    @else {
+      <app-collections-list
+        [collections]="collections"
+        [selectedCollection]="selectedCollection"
+        (selectCollection)="onSelectCollection($event)"
+        (addCollection)="onAddCollection($event)"
+        (selectSnippet)="selectSnippet($event)">
+      </app-collections-list>
+    }
+  </aside>  <main class="gallery-panel mat-elevation-z2">
     @if (selectedSnippet && selectedSnippet.title) {
       <app-code-editor [snippet]="selectedSnippet"></app-code-editor>
     }

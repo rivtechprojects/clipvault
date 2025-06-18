@@ -37,11 +37,9 @@
           </mat-option>
         }
       </mat-select>
-    </div>
-  }
-  <div class="snippet-editor" [ngStyle]="{'height': '200px', 'width': '100%'}">
+    </div>  }  <div class="snippet-editor" [ngStyle]="{'height': '200px', 'width': '100%'}">
     <ngx-monaco-editor
-      [options]="{theme: 'vs-dark', readOnly: true, minimap: {enabled: false}, language: getLanguageValue(snippet.language) || 'javascript'}"
+      [options]="{theme: 'vs-dark', readOnly: true, minimap: {enabled: false}, automaticLayout: true}"
       [model]="{ value: snippet.code || '', language: getLanguageValue(snippet.language) || 'javascript' }"
     ></ngx-monaco-editor>
   </div>

@@ -1,0 +1,83 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>Sign In to ClipVault</mat-card-title>
+      <mat-card-subtitle>Access your code snippets</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">        <!-- Email/Username Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email or Username</mat-label>
+          <input
+            matInput
+            type="text"
+            formControlName="userNameOrEmail"
+            autocomplete="email"
+            [class.mat-form-field-invalid]="loginForm.get('userNameOrEmail')?.invalid && loginForm.get('userNameOrEmail')?.touched"
+          />
+          <mat-icon matSuffix>email</mat-icon>
+          <mat-error>{{ getEmailErrorMessage() }}</mat-error>
+        </mat-form-field>
+
+        <!-- Password Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            formControlName="password"
+            autocomplete="current-password"
+            [class.mat-form-field-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="'Hide password'"
+            [attr.aria-pressed]="hidePassword"
+          >
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error>{{ getPasswordErrorMessage() }}</mat-error>
+        </mat-form-field>
+
+        <!-- Error Message -->
+        @if (errorMessage) {
+          <div class="error-message">
+            <mat-icon>error</mat-icon>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+
+        <!-- Submit Button -->
+        <div class="button-container">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="full-width"
+            [disabled]="loginForm.invalid || isLoading"
+          >
+            @if (isLoading) {
+              <mat-spinner diameter="20"></mat-spinner>
+              <span>Signing In...</span>
+            } @else {
+              <span>Sign In</span>
+            }
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <div class="auth-footer">
+        <p>Don't have an account?</p>
+        <button mat-button color="primary" (click)="goToRegister()">
+          Create Account
+        </button>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+</div>
