@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, Signal } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, Signal, effect } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatChipsModule } from '@angular/material/chips';
@@ -39,25 +39,18 @@ export class SnippetGallery implements OnInit {
   selectedCollection: Collection | null = null;
   selectedSnippet: Snippet | null = null;
   errorMessage: string | null = null;
-
   constructor(private collectionsService: CollectionsService) {
     this.collectionsSignal = this.collectionsService.collections;
     this.loadingSignal = this.collectionsService.loading;
     this.selectedSnippet = null;
-  }
-
-  ngOnInit() {
-    this.loadCollections();
-  }
-
-  private loadCollections() {
-    this.errorMessage = null;
-    this.collectionsService.loadCollections();
     
-    // Subscribe to collections changes
-    setTimeout(() => {
+    // Use effect to reactively handle collections changes
+    effect(() => {
       const collections = this.collectionsSignal();
-      if (collections && collections.length > 0) {
+      const isLoading = this.loadingSignal();
+      
+      // Only auto-select when we have collections and are not loading
+      if (!isLoading && collections && collections.length > 0 && !this.selectedCollection) {
         this.selectedCollection = collections[0];
         if (collections[0].snippets && collections[0].snippets.length > 0) {
           this.selectedSnippet = collections[0].snippets[0];
@@ -65,7 +58,16 @@ export class SnippetGallery implements OnInit {
           this.selectedSnippet = null;
         }
       }
-    }, 100);
+    });
+  }
+
+  ngOnInit() {
+    this.loadCollections();
+  }
+  private loadCollections() {
+    this.errorMessage = null;
+    this.collectionsService.loadCollections();
+    // The effect in the constructor will handle the selection automatically
   }
 
   onSelectCollection(collection: Collection) {
