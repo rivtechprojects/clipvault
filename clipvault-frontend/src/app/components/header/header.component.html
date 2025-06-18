@@ -1,0 +1,44 @@
+<mat-toolbar color="primary" class="app-header">
+  <div class="header-content">
+    <!-- Logo/Brand -->
+    <div class="brand" (click)="goToGallery()">
+      <mat-icon>code</mat-icon>
+      <span>ClipVault</span>
+    </div>
+
+    <!-- Navigation Actions -->
+    <div class="nav-actions">
+      @if (isAuthenticated$ | async) {
+        <!-- Authenticated User Menu -->
+        <button mat-icon-button [matMenuTriggerFor]="userMenu">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu">
+          @if (currentUser$ | async; as user) {
+            <div class="user-info">
+              <div class="user-name">{{ user.userName }}</div>
+              <div class="user-email">{{ user.email }}</div>
+            </div>
+            <mat-divider></mat-divider>
+          }
+          <button mat-menu-item (click)="goToGallery()">
+            <mat-icon>dashboard</mat-icon>
+            <span>My Snippets</span>
+          </button>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
+      } @else {
+        <!-- Unauthenticated Actions -->
+        <button mat-button (click)="goToLogin()">
+          Sign In
+        </button>
+        <button mat-raised-button color="accent" (click)="goToRegister()">
+          Get Started
+        </button>
+      }
+    </div>
+  </div>
+</mat-toolbar>

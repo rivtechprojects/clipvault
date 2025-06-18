@@ -5,6 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { CollectionsService } from '../../services/collections.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,8 +15,7 @@ import { Collection, Snippet } from '../../models/models';
 
 @Component({
   selector: 'app-snippet-gallery',
-  standalone: true,
-  imports: [
+  standalone: true,  imports: [
     CommonModule,
     CodeEditor,
     CollectionsListComponent,
@@ -25,6 +25,7 @@ import { Collection, Snippet } from '../../models/models';
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
+    MatButtonModule,
     FormsModule
   ],
   providers: [],
@@ -34,25 +35,37 @@ import { Collection, Snippet } from '../../models/models';
 })
 export class SnippetGallery implements OnInit {
   collectionsSignal: Signal<Collection[]>;
+  loadingSignal: Signal<boolean>;
   selectedCollection: Collection | null = null;
   selectedSnippet: Snippet | null = null;
+  errorMessage: string | null = null;
 
   constructor(private collectionsService: CollectionsService) {
     this.collectionsSignal = this.collectionsService.collections;
+    this.loadingSignal = this.collectionsService.loading;
     this.selectedSnippet = null;
   }
 
   ngOnInit() {
-    this.collectionsService.fetchCollections();
-    const collections = this.collectionsSignal();
-    if (collections && collections.length > 0) {
-      this.selectedCollection = collections[0];
-      if (collections[0].snippets && collections[0].snippets.length > 0) {
-        this.selectedSnippet = collections[0].snippets[0];
-      } else {
-        this.selectedSnippet = null;
+    this.loadCollections();
+  }
+
+  private loadCollections() {
+    this.errorMessage = null;
+    this.collectionsService.loadCollections();
+    
+    // Subscribe to collections changes
+    setTimeout(() => {
+      const collections = this.collectionsSignal();
+      if (collections && collections.length > 0) {
+        this.selectedCollection = collections[0];
+        if (collections[0].snippets && collections[0].snippets.length > 0) {
+          this.selectedSnippet = collections[0].snippets[0];
+        } else {
+          this.selectedSnippet = null;
+        }
       }
-    }
+    }, 100);
   }
 
   onSelectCollection(collection: Collection) {
@@ -66,19 +79,25 @@ export class SnippetGallery implements OnInit {
 
   onAddCollection(name: string) {
     if (!name || !name.trim()) return;
-    this.collectionsService.addCollection({
-      id: Date.now(),
-      name: name.trim(),
-      snippets: [],
-      parentCollectionId: null,
-      subCollections: [],
-      isDeleted: false
-    });
+    
+    this.collectionsService.addNewCollection(name.trim());
   }
 
   selectSnippet(snippet: Snippet) {
     if (snippet && snippet.title && snippet.code !== undefined) {
       this.selectedSnippet = snippet;
     }
+  }
+
+  onRetryLoad() {
+    this.loadCollections();
+  }
+
+  get isLoading(): boolean {
+    return this.loadingSignal();
+  }
+
+  get collections(): Collection[] {
+    return this.collectionsSignal();
   }
 }
